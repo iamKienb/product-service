@@ -1,0 +1,37 @@
+package product
+
+import (
+	"context"
+	"errors"
+	"product-command-module/db/repository"
+	"product-command-module/internal/domain/product"
+
+	pgx "github.com/iamKienb/go-core/postgres"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+type productRepository struct {
+	queries *repository.Queries
+}
+
+func NewRepository(service pgx.PGXService) product.Repository {
+	return &productRepository{
+		queries: repository.New(service.GetPool()),
+	}
+}
+
+func (r *productRepository) getQuerier(ctx context.Context) *repository.Queries {
+	if tx := pgx.ExtractTx(ctx); tx != nil {
+		return r.queries.WithTx(tx)
+	}
+	return r.queries
+}
+
+func (r *productRepository) IsDuplicateSlug(err error) bool {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		return pgErr.Code == "23505" && pgErr.ConstraintName == "uq_product_slug"
+	}
+
+	return false
+}

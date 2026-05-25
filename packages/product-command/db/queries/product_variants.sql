@@ -1,0 +1,36 @@
+-- name: BatchCreateVariants :exec
+INSERT INTO product_variants (
+    sku_id,
+    product_id, 
+    shop_id,
+    sku_code,
+    price,
+    currency,
+    image_url,
+    status,
+    is_default,
+    created_by,
+    created_at
+)
+SELECT
+    unnest(@sku_ids::uuid[]),
+    @product_id::uuid,
+    @shop_id::uuid,
+    unnest(@sku_codes::text[]),
+    unnest(@prices::int[]),
+    unnest(@currencies::text[]),
+    unnest(@image_urls::text[]),
+    unnest(@status::text[]),
+    unnest(@is_defaults::boolean[]),
+    unnest(@created_bys::uuid[]),
+    unnest(@created_ats::timestamptz[]);
+
+-- name: BatchLinkVariantAttributes :exec
+INSERT INTO product_attribute_values (
+    sku_id,
+    attribute_value_id
+)
+SELECT
+    unnest(@sku_ids::uuid[]),
+    unnest(@attribute_value_ids::uuid[])
+ON CONFLICT DO NOTHING;
