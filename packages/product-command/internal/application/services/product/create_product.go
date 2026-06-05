@@ -2,13 +2,23 @@ package product
 
 import (
 	"context"
+	"errors"
+
 	"product-command-module/internal/application/commands/create_product"
 	"product-command-module/internal/application/port"
 	"product-command-module/internal/domain/product"
 )
 
 func (s *productService) CreateProduct(ctx context.Context, cmd create_product.Command) (*create_product.Result, error) {
-	if err := s.checkSlugAvailable(ctx, cmd.Slug); err != nil {
+	if err := validateCreateProductCommand(cmd); err != nil {
+		return nil, err
+	}
+
+	existing, err := s.findExistingProductBySlug(ctx, cmd)
+	if err == nil {
+		return createProductResultFromExisting(cmd, existing)
+	}
+	if !errors.Is(err, product.ErrProductNotFound) {
 		return nil, err
 	}
 
@@ -32,16 +42,8 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 		}
 	}
 
-	if len(cmd.Variants) == 0 {
-		return nil, product.ErrNoSKU
-	}
-
 	skuItems := make([]create_product.SkuItem, 0, len(cmd.Variants))
 	for index, variant := range cmd.Variants {
-		if variant.Quantity < 0 {
-			return nil, product.ErrInvalidSkuQuantity
-		}
-
 		isDefault := index == 0
 
 		variantParam := product.ProductVariantParams{
@@ -81,6 +83,12 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 
 		return nil
 	}); err != nil {
+		if errors.Is(err, product.ErrProductSlugTaken) {
+			existing, readErr := s.productRepo.GetProductByShopAndSlug(ctx, cmd.ShopID, cmd.Slug)
+			if readErr == nil {
+				return createProductResultFromExisting(cmd, existing)
+			}
+		}
 		return nil, err
 	}
 
@@ -96,23 +104,64 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 	}, nil
 }
 
-func (s *productService) checkSlugAvailable(ctx context.Context, slug string) error {
-	exists, err := s.productCache.GetSlugFromBloomFilter(ctx, slug)
+func validateCreateProductCommand(cmd create_product.Command) error {
+	if len(cmd.Variants) == 0 {
+		return product.ErrNoSKU
+	}
+	for _, variant := range cmd.Variants {
+		if variant.Quantity < 0 {
+			return product.ErrInvalidSkuQuantity
+		}
+	}
+	return nil
+}
+
+func (s *productService) findExistingProductBySlug(ctx context.Context, cmd create_product.Command) (*product.Product, error) {
+	exists, err := s.productCache.GetSlugFromBloomFilter(ctx, cmd.Slug)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if exists == 0 {
-		return nil
+		return nil, product.ErrProductNotFound
 	}
 
-	isDuplicateSlug, err := s.productRepo.CheckSlugExists(ctx, slug)
+	isDuplicateSlug, err := s.productRepo.CheckSlugExists(ctx, cmd.ShopID, cmd.Slug)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if isDuplicateSlug {
-		return product.ErrProductSlugTaken
+	if !isDuplicateSlug {
+		return nil, product.ErrProductNotFound
 	}
 
-	return nil
+	return s.productRepo.GetProductByShopAndSlug(ctx, cmd.ShopID, cmd.Slug)
+}
+
+func createProductResultFromExisting(cmd create_product.Command, existing *product.Product) (*create_product.Result, error) {
+	if existing.ShopID != cmd.ShopID {
+		return nil, product.ErrProductSlugTaken
+	}
+
+	variantsByCode := make(map[string]product.ProductVariant, len(existing.Variants))
+	for _, variant := range existing.Variants {
+		variantsByCode[variant.SkuCode] = variant
+	}
+
+	skuItems := make([]create_product.SkuItem, 0, len(cmd.Variants))
+	for _, requested := range cmd.Variants {
+		variant, exists := variantsByCode[requested.SkuCode]
+		if !exists {
+			return nil, product.ErrProductSlugTaken
+		}
+		skuItems = append(skuItems, create_product.SkuItem{
+			SkuID:    variant.SkuID,
+			Quantity: requested.Quantity,
+		})
+	}
+
+	return &create_product.Result{
+		ShopID:    existing.ShopID,
+		ProductID: existing.ID,
+		SkuItems:  skuItems,
+	}, nil
 }

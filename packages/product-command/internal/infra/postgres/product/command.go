@@ -14,6 +14,9 @@ import (
 
 func (r *productRepository) CreateProduct(ctx context.Context, product *domain_product.Product) error {
 	if err := r.getQuerier(ctx).CreateProduct(ctx, toCreateProductParams(product)); err != nil {
+		if r.IsDuplicateSlug(err) {
+			return domain_product.ErrProductSlugTaken
+		}
 		return fmt.Errorf("infra: create product: %w", err)
 	}
 
@@ -46,7 +49,14 @@ func (r *productRepository) CreateProduct(ctx context.Context, product *domain_p
 }
 
 func (r *productRepository) DeleteProduct(ctx context.Context, productID shared.ProductID) error {
-	return domain_product.ErrProductNotFound
+	rowsAffected, err := r.getQuerier(ctx).DeleteProduct(ctx, conv.UUID(productID))
+	if err != nil {
+		return fmt.Errorf("infra: delete product: %w", err)
+	}
+	if rowsAffected == 0 {
+		return domain_product.ErrProductNotFound
+	}
+	return nil
 }
 
 func toCreateProductParams(product *domain_product.Product) repository.CreateProductParams {

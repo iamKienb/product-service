@@ -38,11 +38,30 @@ WHERE shop_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 
--- name: CountProductBySlug :one
-SELECT
-    1
+-- name: CheckProductSlugExists :one
+SELECT EXISTS (
+    SELECT 1
+    FROM products
+    WHERE shop_id = @shop_id::uuid
+      AND slug = @slug::text
+);
+
+-- name: GetProductByID :one
+SELECT *
 FROM products
-WHERE slug = @slug::text;
+WHERE id = @id::uuid
+LIMIT 1;
+
+-- name: GetProductByShopAndSlug :one
+SELECT *
+FROM products
+WHERE shop_id = @shop_id::uuid
+  AND slug = @slug::text
+LIMIT 1;
+
+-- name: DeleteProduct :execrows
+DELETE FROM products
+WHERE id = @id::uuid;
 
 -- -- name: GetProductDetailWithVariants :one
 -- SELECT 

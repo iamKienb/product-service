@@ -90,3 +90,82 @@ func (q *Queries) BatchLinkVariantAttributes(ctx context.Context, arg BatchLinkV
 	_, err := q.db.Exec(ctx, batchLinkVariantAttributes, arg.SkuIds, arg.AttributeValueIds)
 	return err
 }
+
+const findPriceSkusByIDs = `-- name: FindPriceSkusByIDs :many
+SELECT 
+    sku_id, 
+    price
+FROM product_variants
+WHERE sku_id = ANY($1::uuid[])
+    AND shop_id = $2::uuid
+`
+
+type FindPriceSkusByIDsParams struct {
+	SkuIds []pgtype.UUID
+	ShopID pgtype.UUID
+}
+
+type FindPriceSkusByIDsRow struct {
+	SkuID pgtype.UUID
+	Price int64
+}
+
+func (q *Queries) FindPriceSkusByIDs(ctx context.Context, arg FindPriceSkusByIDsParams) ([]FindPriceSkusByIDsRow, error) {
+	rows, err := q.db.Query(ctx, findPriceSkusByIDs, arg.SkuIds, arg.ShopID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FindPriceSkusByIDsRow
+	for rows.Next() {
+		var i FindPriceSkusByIDsRow
+		if err := rows.Scan(&i.SkuID, &i.Price); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listVariantsByProductID = `-- name: ListVariantsByProductID :many
+SELECT sku_id, product_id, shop_id, sku_code, price, currency, image_url, status, is_default, created_by, updated_by, created_at, updated_at
+FROM product_variants
+WHERE product_id = $1::uuid
+`
+
+func (q *Queries) ListVariantsByProductID(ctx context.Context, productID pgtype.UUID) ([]ProductVariant, error) {
+	rows, err := q.db.Query(ctx, listVariantsByProductID, productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ProductVariant
+	for rows.Next() {
+		var i ProductVariant
+		if err := rows.Scan(
+			&i.SkuID,
+			&i.ProductID,
+			&i.ShopID,
+			&i.SkuCode,
+			&i.Price,
+			&i.Currency,
+			&i.ImageUrl,
+			&i.Status,
+			&i.IsDefault,
+			&i.CreatedBy,
+			&i.UpdatedBy,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

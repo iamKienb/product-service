@@ -43,3 +43,8 @@ SELECT
 FROM product_variants
 WHERE sku_id = ANY(@sku_ids::uuid[])
     AND shop_id = @shop_id::uuid;
+
+-- name: ListVariantsByProductID :many
+SELECT *
+FROM product_variants
+WHERE product_id = @product_id::uuid;

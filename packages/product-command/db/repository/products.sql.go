@@ -11,18 +11,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const countProductBySlug = `-- name: CountProductBySlug :one
-SELECT
-    1
-FROM products
-WHERE slug = $1::text
+const checkProductSlugExists = `-- name: CheckProductSlugExists :one
+SELECT EXISTS (
+    SELECT 1
+    FROM products
+    WHERE shop_id = $1::uuid
+      AND slug = $2::text
+)
 `
 
-func (q *Queries) CountProductBySlug(ctx context.Context, slug string) (int32, error) {
-	row := q.db.QueryRow(ctx, countProductBySlug, slug)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+type CheckProductSlugExistsParams struct {
+	ShopID pgtype.UUID
+	Slug   string
+}
+
+func (q *Queries) CheckProductSlugExists(ctx context.Context, arg CheckProductSlugExistsParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkProductSlugExists, arg.ShopID, arg.Slug)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const createProduct = `-- name: CreateProduct :exec
@@ -95,6 +102,87 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) er
 		arg.CreatedAt,
 	)
 	return err
+}
+
+const deleteProduct = `-- name: DeleteProduct :execrows
+DELETE FROM products
+WHERE id = $1::uuid
+`
+
+func (q *Queries) DeleteProduct(ctx context.Context, id pgtype.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteProduct, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const getProductByID = `-- name: GetProductByID :one
+SELECT id, shop_id, name, slug, description, brand, thumb_url, video_url, price_min, price_max, status, has_variant, created_by, updated_by, created_at, updated_at
+FROM products
+WHERE id = $1::uuid
+LIMIT 1
+`
+
+func (q *Queries) GetProductByID(ctx context.Context, id pgtype.UUID) (Product, error) {
+	row := q.db.QueryRow(ctx, getProductByID, id)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.ShopID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Brand,
+		&i.ThumbUrl,
+		&i.VideoUrl,
+		&i.PriceMin,
+		&i.PriceMax,
+		&i.Status,
+		&i.HasVariant,
+		&i.CreatedBy,
+		&i.UpdatedBy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getProductByShopAndSlug = `-- name: GetProductByShopAndSlug :one
+SELECT id, shop_id, name, slug, description, brand, thumb_url, video_url, price_min, price_max, status, has_variant, created_by, updated_by, created_at, updated_at
+FROM products
+WHERE shop_id = $1::uuid
+  AND slug = $2::text
+LIMIT 1
+`
+
+type GetProductByShopAndSlugParams struct {
+	ShopID pgtype.UUID
+	Slug   string
+}
+
+func (q *Queries) GetProductByShopAndSlug(ctx context.Context, arg GetProductByShopAndSlugParams) (Product, error) {
+	row := q.db.QueryRow(ctx, getProductByShopAndSlug, arg.ShopID, arg.Slug)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.ShopID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Brand,
+		&i.ThumbUrl,
+		&i.VideoUrl,
+		&i.PriceMin,
+		&i.PriceMax,
+		&i.Status,
+		&i.HasVariant,
+		&i.CreatedBy,
+		&i.UpdatedBy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const listProductsByShop = `-- name: ListProductsByShop :many

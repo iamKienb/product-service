@@ -7,7 +7,8 @@ import (
 
 type QueryRepository interface {
 	GetProductByID(ctx context.Context, productID shared.ProductID) (*Product, error)
-	CheckSlugExists(ctx context.Context, slug string) (bool, error)
+	GetProductByShopAndSlug(ctx context.Context, shopID shared.ShopID, slug string) (*Product, error)
+	CheckSlugExists(ctx context.Context, shopID shared.ShopID, slug string) (bool, error)
 }
 
 type CommandRepository interface {

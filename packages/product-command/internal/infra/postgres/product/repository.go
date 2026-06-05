@@ -14,6 +14,11 @@ type productRepository struct {
 	queries *repository.Queries
 }
 
+var productSlugConstraints = map[string]struct{}{
+	"products_shop_id_slug_key": {},
+	"uq_product_slug":           {},
+}
+
 func NewRepository(service pgx.PGXService) product.Repository {
 	return &productRepository{
 		queries: repository.New(service.GetPool()),
@@ -30,7 +35,8 @@ func (r *productRepository) getQuerier(ctx context.Context) *repository.Queries 
 func (r *productRepository) IsDuplicateSlug(err error) bool {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
-		return pgErr.Code == "23505" && pgErr.ConstraintName == "uq_product_slug"
+		_, ok := productSlugConstraints[pgErr.ConstraintName]
+		return pgErr.Code == "23505" && ok
 	}
 
 	return false
