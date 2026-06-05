@@ -56,3 +56,58 @@ func (q *Queries) BatchCreateAttributes(ctx context.Context, arg BatchCreateAttr
 	_, err := q.db.Exec(ctx, batchCreateAttributes, arg.Ids, arg.ProductID, arg.Names)
 	return err
 }
+
+const listAttributeValuesByProductID = `-- name: ListAttributeValuesByProductID :many
+SELECT av.id, av.product_attribute_id, av.name
+FROM attribute_values av
+JOIN product_attributes pa ON pa.id = av.product_attribute_id
+WHERE pa.product_id = $1::uuid
+ORDER BY av.name ASC
+`
+
+func (q *Queries) ListAttributeValuesByProductID(ctx context.Context, productID pgtype.UUID) ([]AttributeValue, error) {
+	rows, err := q.db.Query(ctx, listAttributeValuesByProductID, productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AttributeValue
+	for rows.Next() {
+		var i AttributeValue
+		if err := rows.Scan(&i.ID, &i.ProductAttributeID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAttributesByProductID = `-- name: ListAttributesByProductID :many
+SELECT id, product_id, name
+FROM product_attributes
+WHERE product_id = $1::uuid
+ORDER BY name ASC
+`
+
+func (q *Queries) ListAttributesByProductID(ctx context.Context, productID pgtype.UUID) ([]ProductAttribute, error) {
+	rows, err := q.db.Query(ctx, listAttributesByProductID, productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ProductAttribute
+	for rows.Next() {
+		var i ProductAttribute
+		if err := rows.Scan(&i.ID, &i.ProductID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -3,6 +3,8 @@ package product
 import (
 	"context"
 	"errors"
+	"sort"
+	"strings"
 
 	"product-command-module/internal/application/commands/create_product"
 	"product-command-module/internal/application/port"
@@ -105,13 +107,46 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 }
 
 func validateCreateProductCommand(cmd create_product.Command) error {
+	if strings.TrimSpace(cmd.Name) == "" {
+		return product.ErrEmptyName
+	}
+	if strings.TrimSpace(cmd.Slug) == "" {
+		return product.ErrEmptySlug
+	}
 	if len(cmd.Variants) == 0 {
 		return product.ErrNoSKU
 	}
+
+	seenAttributes := make(map[string]struct{}, len(cmd.Attributes))
+	seenAttributeValues := make(map[string]struct{})
+	for _, attr := range cmd.Attributes {
+		if strings.TrimSpace(attr.Name) == "" || len(attr.Values) == 0 {
+			return product.ErrInvalidAttribute
+		}
+		if _, exists := seenAttributes[attr.Name]; exists {
+			return product.ErrInvalidAttribute
+		}
+		seenAttributes[attr.Name] = struct{}{}
+		for _, value := range attr.Values {
+			if strings.TrimSpace(value) == "" {
+				return product.ErrInvalidAttribute
+			}
+			if _, exists := seenAttributeValues[value]; exists {
+				return product.ErrInvalidAttribute
+			}
+			seenAttributeValues[value] = struct{}{}
+		}
+	}
+
+	seenSkuCodes := make(map[string]struct{}, len(cmd.Variants))
 	for _, variant := range cmd.Variants {
 		if variant.Quantity < 0 {
 			return product.ErrInvalidSkuQuantity
 		}
+		if _, exists := seenSkuCodes[variant.SkuCode]; exists {
+			return product.ErrDuplicateSKUCode
+		}
+		seenSkuCodes[variant.SkuCode] = struct{}{}
 	}
 	return nil
 }
@@ -138,7 +173,7 @@ func (s *productService) findExistingProductBySlug(ctx context.Context, cmd crea
 }
 
 func createProductResultFromExisting(cmd create_product.Command, existing *product.Product) (*create_product.Result, error) {
-	if existing.ShopID != cmd.ShopID {
+	if !matchesCreateProductCommand(cmd, existing) {
 		return nil, product.ErrProductSlugTaken
 	}
 
@@ -165,3 +200,120 @@ func createProductResultFromExisting(cmd create_product.Command, existing *produ
 		SkuItems:  skuItems,
 	}, nil
 }
+
+func matchesCreateProductCommand(cmd create_product.Command, existing *product.Product) bool {
+	if existing.ShopID != cmd.ShopID ||
+		existing.Name != cmd.Name ||
+		existing.Slug != cmd.Slug ||
+		existing.Description != cmd.Description ||
+		existing.Brand != cmd.Brand ||
+		existing.ThumbUrl != cmd.ThumbUrl ||
+		existing.VideoUrl != cmd.VideoUrl ||
+		existing.HasVariant != cmd.HasVariant {
+		return false
+	}
+
+	if !matchesAttributes(cmd.Attributes, existing) {
+		return false
+	}
+
+	return matchesVariants(cmd.Variants, existing)
+}
+
+func matchesAttributes(requested []create_product.ProductAttribute, existing *product.Product) bool {
+	if len(requested) != len(existing.Attributes) {
+		return false
+	}
+
+	valuesByAttributeID := make(map[productAttributeID][]string, len(existing.Attributes))
+	for _, value := range existing.AttributeValues {
+		attributeID := productAttributeID(value.AttributeID.String())
+		valuesByAttributeID[attributeID] = append(valuesByAttributeID[attributeID], value.Name)
+	}
+
+	existingValuesByName := make(map[string][]string, len(existing.Attributes))
+	for _, attribute := range existing.Attributes {
+		attributeID := productAttributeID(attribute.ID.String())
+		existingValuesByName[attribute.Name] = sortedStrings(valuesByAttributeID[attributeID])
+	}
+
+	seenRequestedAttributes := make(map[string]struct{}, len(requested))
+	for _, attr := range requested {
+		if _, exists := seenRequestedAttributes[attr.Name]; exists {
+			return false
+		}
+		seenRequestedAttributes[attr.Name] = struct{}{}
+
+		existingValues, exists := existingValuesByName[attr.Name]
+		if !exists {
+			return false
+		}
+		if !sameStrings(existingValues, sortedStrings(attr.Values)) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func matchesVariants(requested []create_product.ProductVariant, existing *product.Product) bool {
+	if len(requested) != len(existing.Variants) {
+		return false
+	}
+
+	attributeValueNameByID := make(map[string]string, len(existing.AttributeValues))
+	for _, value := range existing.AttributeValues {
+		attributeValueNameByID[value.ID.String()] = value.Name
+	}
+
+	existingBySkuCode := make(map[string]product.ProductVariant, len(existing.Variants))
+	for _, variant := range existing.Variants {
+		existingBySkuCode[variant.SkuCode] = variant
+	}
+
+	seenRequestedSkuCodes := make(map[string]struct{}, len(requested))
+	for _, req := range requested {
+		if _, exists := seenRequestedSkuCodes[req.SkuCode]; exists {
+			return false
+		}
+		seenRequestedSkuCodes[req.SkuCode] = struct{}{}
+
+		variant, exists := existingBySkuCode[req.SkuCode]
+		if !exists ||
+			variant.Price != req.Price ||
+			variant.Currency != req.Currency ||
+			variant.ImageUrl != req.ImageUrl {
+			return false
+		}
+
+		existingValueNames := make([]string, 0, len(variant.AttributeValueIDs))
+		for _, id := range variant.AttributeValueIDs {
+			existingValueNames = append(existingValueNames, attributeValueNameByID[id.String()])
+		}
+		if !sameStrings(sortedStrings(req.AttributeValueNames), sortedStrings(existingValueNames)) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func sortedStrings(values []string) []string {
+	result := append([]string(nil), values...)
+	sort.Strings(result)
+	return result
+}
+
+func sameStrings(left []string, right []string) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for index := range left {
+		if left[index] != right[index] {
+			return false
+		}
+	}
+	return true
+}
+
+type productAttributeID string

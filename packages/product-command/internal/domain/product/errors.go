@@ -5,6 +5,7 @@ import "errors"
 var (
 	ErrInvalidProductID        = errors.New("invalid_product_id")
 	ErrEmptyName               = errors.New("name must not be empty")
+	ErrEmptySlug               = errors.New("slug must not be empty")
 	ErrEmptySKUCode            = errors.New("sku code must not be empty")
 	ErrDuplicateSKUCode        = errors.New("duplicate sku code")
 	ErrNoSKU                   = errors.New("must have at least one sku")

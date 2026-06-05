@@ -88,6 +88,11 @@ func (p *Product) AddAttribute(name string, values []string) error {
 	if name == "" || len(values) == 0 {
 		return ErrInvalidAttribute
 	}
+	for _, existing := range p.Attributes {
+		if existing.Name == name {
+			return ErrInvalidAttribute
+		}
+	}
 
 	attributeID := shared.NewID[shared.AttributeID]()
 	attribute := Attribute{
@@ -100,6 +105,9 @@ func (p *Product) AddAttribute(name string, values []string) error {
 
 	for _, valName := range values {
 		if valName == "" {
+			return ErrInvalidAttribute
+		}
+		if _, exists := p.valueToID[valName]; exists {
 			return ErrInvalidAttribute
 		}
 

@@ -130,6 +130,33 @@ func (q *Queries) FindPriceSkusByIDs(ctx context.Context, arg FindPriceSkusByIDs
 	return items, nil
 }
 
+const listVariantAttributeValuesByProductID = `-- name: ListVariantAttributeValuesByProductID :many
+SELECT pav.sku_id, pav.attribute_value_id
+FROM product_attribute_values pav
+JOIN product_variants pv ON pv.sku_id = pav.sku_id
+WHERE pv.product_id = $1::uuid
+`
+
+func (q *Queries) ListVariantAttributeValuesByProductID(ctx context.Context, productID pgtype.UUID) ([]ProductAttributeValue, error) {
+	rows, err := q.db.Query(ctx, listVariantAttributeValuesByProductID, productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ProductAttributeValue
+	for rows.Next() {
+		var i ProductAttributeValue
+		if err := rows.Scan(&i.SkuID, &i.AttributeValueID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listVariantsByProductID = `-- name: ListVariantsByProductID :many
 SELECT sku_id, product_id, shop_id, sku_code, price, currency, image_url, status, is_default, created_by, updated_by, created_at, updated_at
 FROM product_variants

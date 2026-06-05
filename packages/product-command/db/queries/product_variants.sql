@@ -48,3 +48,9 @@ WHERE sku_id = ANY(@sku_ids::uuid[])
 SELECT *
 FROM product_variants
 WHERE product_id = @product_id::uuid;
+
+-- name: ListVariantAttributeValuesByProductID :many
+SELECT pav.*
+FROM product_attribute_values pav
+JOIN product_variants pv ON pv.sku_id = pav.sku_id
+WHERE pv.product_id = @product_id::uuid;
