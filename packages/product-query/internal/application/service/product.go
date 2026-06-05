@@ -18,6 +18,13 @@ type productService struct {
 	esClient *elasticsearch.TypedClient
 }
 
+const (
+	productStatusActive  = "ACTIVE"
+	variantInnerHitName  = "sku_variants"
+	errCheckoutSkuAbsent = "checkout product validation failed: sku %s not found or invalid for shop %s"
+	errCheckoutSkuStatus = "checkout product validation failed: sku %s is currently status %s"
+)
+
 func NewProductService(esClient *elasticsearch.TypedClient, index string) *productService {
 	return &productService{
 		esClient: esClient,
@@ -32,8 +39,6 @@ func (s *productService) SearchBySkuIDs(ctx context.Context, qry get_product_by_
 
 	variantBuilder := NewQueryBuilder().
 		FilterTerms("variants.sku_id", qry.SkuIDs)
-
-	const variantInnerHitName = "sku_variants"
 
 	searchQueryBody := NewQueryBuilder().
 		MustTerm("shop_id", qry.ShopID).
@@ -74,11 +79,11 @@ func (s *productService) SearchBySkuIDs(ctx context.Context, qry get_product_by_
 	for _, reqSkuID := range qry.SkuIDs {
 		cachedResult, exists := foundVariantsMap[reqSkuID]
 		if !exists {
-			return nil, fmt.Errorf("checkout product validation failed: sku %s not found or invalid for shop %s", reqSkuID, qry.ShopID)
+			return nil, fmt.Errorf(errCheckoutSkuAbsent, reqSkuID, qry.ShopID)
 		}
 
-		if cachedResult.Status != "ACTIVE" {
-			return nil, fmt.Errorf("checkout product validation failed: sku %s is currently status %s", reqSkuID, cachedResult.Status)
+		if cachedResult.Status != productStatusActive {
+			return nil, fmt.Errorf(errCheckoutSkuStatus, reqSkuID, cachedResult.Status)
 		}
 
 		skuResults = append(skuResults, cachedResult)

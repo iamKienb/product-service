@@ -1,10 +1,10 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
@@ -26,7 +26,7 @@ func SearchDocuments[T any](ctx context.Context, esClient *elasticsearch.TypedCl
 		return nil, fmt.Errorf("marshal es query failed: %w", err)
 	}
 
-	res, err := esClient.Search().Index(index).Raw(strings.NewReader(string(rawJson))).Do(ctx)
+	res, err := esClient.Search().Index(index).Raw(bytes.NewReader(rawJson)).Do(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("elasticsearch transport crash: %w", err)
 	}
