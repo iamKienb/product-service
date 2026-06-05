@@ -52,8 +52,6 @@ func NewInfraModule(ctx context.Context, cfg *config.ProductCommandConfig) (*Inf
 		},
 	}
 
-	apiGatewayAddr := cfg.Gateway.APIGatewayAddr
-
 	pgService, err := pgx.New(cfg.Postgres)
 	if err != nil {
 		return nil, fmt.Errorf("postgres: %w", err)
@@ -75,9 +73,9 @@ func NewInfraModule(ctx context.Context, cfg *config.ProductCommandConfig) (*Inf
 
 		OutboxRepo: outboxPg.NewRepository(pgService),
 
-		ShopClient: grpc_client.NewShopClient(httpClient, apiGatewayAddr),
+		ShopClient: grpc_client.NewShopClient(httpClient, cfg.Upstream.ShopCommandURL),
 
-		InventoryClient: grpc_client.NewInventoryClient(httpClient, apiGatewayAddr),
+		InventoryClient: grpc_client.NewInventoryClient(httpClient, cfg.Upstream.InventoryCommandURL),
 
 		TxManager: pgx.NewTxManager(pgService.GetPool()),
 	}, nil
