@@ -1,8 +1,0 @@
-go 1.25.8
-
-use (
-	./packages/product-command
-	./packages/product-shared
-	./packages/product-query
-	./packages/product-worker
-)
