@@ -232,6 +232,15 @@ func (p *Product) MarkAsCreated() {
 	})
 }
 
+func (p *Product) Publish() error {
+	if p.Status != StatusDraft {
+		return ErrInvalidStatusTransition
+	}
+
+	p.Status = StatusActive
+	return nil
+}
+
 func (p *Product) MarkAsDeleted() {
 	p.AddEvent(ProductDeletedEvent{
 		ProductID: p.ID,

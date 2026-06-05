@@ -11,6 +11,11 @@ import (
 	"product-command-module/internal/domain/product"
 )
 
+const (
+	createProductActionDraft   = "DRAFT"
+	createProductActionPublish = "PUBLISH"
+)
+
 func (s *productService) CreateProduct(ctx context.Context, cmd create_product.Command) (*create_product.Result, error) {
 	if err := validateCreateProductCommand(cmd); err != nil {
 		return nil, err
@@ -66,6 +71,16 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 		})
 	}
 
+	action, err := normalizeCreateProductAction(cmd.Action)
+	if err != nil {
+		return nil, err
+	}
+	if action == createProductActionPublish {
+		if err := newProduct.Publish(); err != nil {
+			return nil, err
+		}
+	}
+
 	newProduct.MarkAsCreated()
 
 	if err := s.txManager.WithTx(ctx, func(ctx context.Context) error {
@@ -116,6 +131,9 @@ func validateCreateProductCommand(cmd create_product.Command) error {
 	if len(cmd.Variants) == 0 {
 		return product.ErrNoSKU
 	}
+	if _, err := normalizeCreateProductAction(cmd.Action); err != nil {
+		return err
+	}
 
 	seenAttributes := make(map[string]struct{}, len(cmd.Attributes))
 	seenAttributeValues := make(map[string]struct{})
@@ -149,6 +167,29 @@ func validateCreateProductCommand(cmd create_product.Command) error {
 		seenSkuCodes[variant.SkuCode] = struct{}{}
 	}
 	return nil
+}
+
+func normalizeCreateProductAction(action string) (string, error) {
+	normalized := strings.ToUpper(strings.TrimSpace(action))
+	switch normalized {
+	case "", createProductActionPublish:
+		return createProductActionPublish, nil
+	case createProductActionDraft:
+		return createProductActionDraft, nil
+	default:
+		return "", product.ErrInvalidProductAction
+	}
+}
+
+func statusForCreateProductAction(action string) (product.ProductStatus, error) {
+	normalized, err := normalizeCreateProductAction(action)
+	if err != nil {
+		return "", err
+	}
+	if normalized == createProductActionDraft {
+		return product.StatusDraft, nil
+	}
+	return product.StatusActive, nil
 }
 
 func (s *productService) findExistingProductBySlug(ctx context.Context, cmd create_product.Command) (*product.Product, error) {
@@ -202,6 +243,11 @@ func createProductResultFromExisting(cmd create_product.Command, existing *produ
 }
 
 func matchesCreateProductCommand(cmd create_product.Command, existing *product.Product) bool {
+	expectedStatus, err := statusForCreateProductAction(cmd.Action)
+	if err != nil {
+		return false
+	}
+
 	if existing.ShopID != cmd.ShopID ||
 		existing.Name != cmd.Name ||
 		existing.Slug != cmd.Slug ||
@@ -209,6 +255,7 @@ func matchesCreateProductCommand(cmd create_product.Command, existing *product.P
 		existing.Brand != cmd.Brand ||
 		existing.ThumbUrl != cmd.ThumbUrl ||
 		existing.VideoUrl != cmd.VideoUrl ||
+		existing.Status != expectedStatus ||
 		existing.HasVariant != cmd.HasVariant {
 		return false
 	}

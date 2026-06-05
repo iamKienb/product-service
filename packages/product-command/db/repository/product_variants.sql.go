@@ -30,7 +30,7 @@ SELECT
     $2::uuid,
     $3::uuid,
     unnest($4::text[]),
-    unnest($5::int[]),
+    unnest($5::bigint[]),
     unnest($6::text[]),
     unnest($7::text[]),
     unnest($8::text[]),
@@ -44,7 +44,7 @@ type BatchCreateVariantsParams struct {
 	ProductID  pgtype.UUID
 	ShopID     pgtype.UUID
 	SkuCodes   []string
-	Prices     []int32
+	Prices     []int64
 	Currencies []string
 	ImageUrls  []string
 	Status     []string

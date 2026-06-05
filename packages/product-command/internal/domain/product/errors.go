@@ -12,6 +12,7 @@ var (
 	ErrInvalidAttribute        = errors.New("invalid_attribute")
 	ErrUnknownAttributeValue   = errors.New("unknown_attribute_value")
 	ErrInvalidSkuQuantity      = errors.New("invalid_sku_quantity")
+	ErrInvalidProductAction    = errors.New("invalid_product_action")
 	ErrInvalidStatusTransition = errors.New("invalid status transition")
 	ErrNegativePrice           = errors.New("price must not be negative")
 	ErrEmptyCurrency           = errors.New("currency must not be empty")

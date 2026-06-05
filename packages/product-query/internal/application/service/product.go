@@ -38,10 +38,12 @@ func (s *productService) SearchBySkuIDs(ctx context.Context, qry get_product_by_
 	}
 
 	variantBuilder := NewQueryBuilder().
-		FilterTerms("variants.sku_id", qry.SkuIDs)
+		FilterTerms("variants.sku_id", qry.SkuIDs).
+		FilterTerm("variants.status", productStatusActive)
 
 	searchQueryBody := NewQueryBuilder().
 		MustTerm("shop_id", qry.ShopID).
+		FilterTerm("status", productStatusActive).
 		Nested("variants", variantBuilder, variantInnerHitName).
 		Build()
 
@@ -54,6 +56,9 @@ func (s *productService) SearchBySkuIDs(ctx context.Context, qry get_product_by_
 
 	for _, rawResult := range esResult.Hits {
 		productDoc := rawResult.Source
+		if productDoc.Status != productStatusActive {
+			continue
+		}
 
 		matchedVariants, err := DecodeInnerHits[models.ProductVariant](rawResult.InnerHits, variantInnerHitName)
 		if err != nil {

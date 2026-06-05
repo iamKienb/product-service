@@ -115,7 +115,7 @@ func toBatchCreateVariantsParams(product *domain_product.Product) repository.Bat
 		ProductID:  conv.UUID(product.ID),
 		ShopID:     conv.UUID(product.ShopID),
 		SkuCodes:   make([]string, 0, len(product.Variants)),
-		Prices:     make([]int32, 0, len(product.Variants)),
+		Prices:     make([]int64, 0, len(product.Variants)),
 		Currencies: make([]string, 0, len(product.Variants)),
 		ImageUrls:  make([]string, 0, len(product.Variants)),
 		Status:     make([]string, 0, len(product.Variants)),
@@ -127,7 +127,7 @@ func toBatchCreateVariantsParams(product *domain_product.Product) repository.Bat
 	for _, variant := range product.Variants {
 		params.SkuIds = append(params.SkuIds, conv.UUID(variant.SkuID))
 		params.SkuCodes = append(params.SkuCodes, variant.SkuCode)
-		params.Prices = append(params.Prices, int32(variant.Price))
+		params.Prices = append(params.Prices, variant.Price)
 		params.Currencies = append(params.Currencies, variant.Currency)
 		params.ImageUrls = append(params.ImageUrls, variant.ImageUrl)
 		params.Status = append(params.Status, string(domain_product.VariantStatusActive))

@@ -29,6 +29,7 @@ func mapError(err error) error {
 	case errors.Is(err, domain_product.ErrEmptyName),
 		errors.Is(err, domain_product.ErrEmptySlug),
 		errors.Is(err, domain_product.ErrInvalidProductID),
+		errors.Is(err, domain_product.ErrInvalidProductAction),
 		errors.Is(err, domain_product.ErrInvalidAttribute):
 		return app_error.New(app_error.KindValidation, errCodeProductInvalid, errMsgProductInvalid, err)
 	case errors.Is(err, domain_product.ErrEmptySKUCode),

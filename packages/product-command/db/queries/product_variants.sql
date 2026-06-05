@@ -17,7 +17,7 @@ SELECT
     @product_id::uuid,
     @shop_id::uuid,
     unnest(@sku_codes::text[]),
-    unnest(@prices::int[]),
+    unnest(@prices::bigint[]),
     unnest(@currencies::text[]),
     unnest(@image_urls::text[]),
     unnest(@status::text[]),
