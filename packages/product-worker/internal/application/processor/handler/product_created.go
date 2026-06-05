@@ -23,7 +23,7 @@ func (h *ProductCreatedHandler) Handle(ctx context.Context, raw json.RawMessage)
 	}
 
 	doc := map[string]any{
-		"product_id":  payload.ProductID,
+		"id":          payload.ProductID,
 		"shop_id":     payload.ShopID,
 		"name":        payload.Name,
 		"slug":        payload.Slug,

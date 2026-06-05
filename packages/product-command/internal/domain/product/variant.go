@@ -13,6 +13,7 @@ type ProductVariant struct {
 	Price             int64
 	Currency          string
 	ImageUrl          string
+	Status            ProductStatus
 	IsDefault         bool
 	AttributeValueIDs []shared.AttributeValueID
 
@@ -32,6 +33,7 @@ func NewProductVariant(params NewVariantParams) *ProductVariant {
 		Price:             params.Price,
 		Currency:          params.Currency,
 		ImageUrl:          params.ImageUrl,
+		Status:            StatusActive,
 		IsDefault:         params.IsDefault,
 		AttributeValueIDs: params.AttributeValueIDs,
 

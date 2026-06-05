@@ -45,6 +45,7 @@ type VariantPayload struct {
 	Price             int64    `json:"price"`
 	Currency          string   `json:"currency"`
 	ImageUrl          string   `json:"image_url"`
+	Status            string   `json:"status"`
 	IsDefault         bool     `json:"is_default"`
 	AttributeValueIDs []string `json:"attribute_value_ids"`
 }

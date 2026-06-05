@@ -31,7 +31,7 @@ type ProductVariant struct {
 	Price             int64    `json:"price"`
 	Currency          string   `json:"currency"`
 	ImageURL          string   `json:"image_url"`
-	Status            string   `json:"variant_status"`
+	Status            string   `json:"status"`
 	IsDefault         bool     `json:"is_default"`
 	AttributeValueIDs []string `json:"attribute_value_ids"`
 

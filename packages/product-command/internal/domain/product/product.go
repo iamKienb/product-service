@@ -170,6 +170,7 @@ func (p *Product) MarkAsCreated() {
 			Price:             variant.Price,
 			Currency:          variant.Currency,
 			ImageUrl:          variant.ImageUrl,
+			Status:            string(variant.Status),
 			IsDefault:         variant.IsDefault,
 			AttributeValueIDs: attrValueStrings,
 		})
