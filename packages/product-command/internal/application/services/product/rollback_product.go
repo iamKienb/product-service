@@ -10,12 +10,12 @@ import (
 func (s *productService) RollbackProduct(ctx context.Context, productID string) error {
 	parseProductID, err := domain_shared.ParseToRawID[domain_shared.ProductID](productID)
 	if err != nil {
-		return s.wrapError(product.ErrInvalidProductID)
+		return product.ErrInvalidProductID
 	}
 
 	prod, err := s.productRepo.GetProductByID(ctx, parseProductID)
 	if err != nil {
-		return s.wrapError(err)
+		return err
 	}
 
 	prod.MarkAsDeleted()
@@ -38,7 +38,7 @@ func (s *productService) RollbackProduct(ctx context.Context, productID string) 
 
 		return nil
 	}); err != nil {
-		return s.wrapError(err)
+		return err
 	}
 
 	return nil

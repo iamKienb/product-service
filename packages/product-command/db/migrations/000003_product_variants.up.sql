@@ -17,7 +17,7 @@ CREATE Table product_variants (
 
     UNIQUE(shop_id, sku_code),
     CONSTRAINT product_variant_status_check
-        CHECK (status IN('IN_STOCK', 'OUT_OF_STOCK', 'COMING_SOON', 'DISCONTINUED', 'HIDDEN'))
+        CHECK (status IN('ACTIVE', 'INACTIVE', 'ARCHIVED'))
 );
 
 CREATE Table product_attribute_values (

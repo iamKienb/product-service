@@ -31,7 +31,7 @@ func (s *productServer) CreateProduct(ctx context.Context, req *connect.Request[
 
 	result, err := s.createProductExecutor.Execute(ctx, cmd)
 	if err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
 	return connect.NewResponse(ToCreateProductResponse(result)), nil

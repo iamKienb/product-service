@@ -120,7 +120,7 @@ func toBatchCreateVariantsParams(product *domain_product.Product) repository.Bat
 		params.Prices = append(params.Prices, int32(variant.Price))
 		params.Currencies = append(params.Currencies, variant.Currency)
 		params.ImageUrls = append(params.ImageUrls, variant.ImageUrl)
-		params.Status = append(params.Status, string(domain_product.StatusActive))
+		params.Status = append(params.Status, string(domain_product.VariantStatusActive))
 		params.IsDefaults = append(params.IsDefaults, variant.IsDefault)
 		params.CreatedBys = append(params.CreatedBys, conv.UUID(variant.CreatedBy))
 		params.CreatedAts = append(params.CreatedAts, conv.TimeStampZ(&variant.CreatedAt))

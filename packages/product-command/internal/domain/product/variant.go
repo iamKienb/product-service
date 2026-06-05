@@ -13,7 +13,7 @@ type ProductVariant struct {
 	Price             int64
 	Currency          string
 	ImageUrl          string
-	Status            ProductStatus
+	Status            VariantStatus
 	IsDefault         bool
 	AttributeValueIDs []shared.AttributeValueID
 
@@ -24,6 +24,14 @@ type ProductVariant struct {
 	UpdatedAt *time.Time
 }
 
+type VariantStatus string
+
+const (
+	VariantStatusActive   VariantStatus = "ACTIVE"
+	VariantStatusInactive VariantStatus = "INACTIVE"
+	VariantStatusArchived VariantStatus = "ARCHIVED"
+)
+
 func NewProductVariant(params NewVariantParams) *ProductVariant {
 	return &ProductVariant{
 		SkuID:             params.SkuID,
@@ -33,7 +41,7 @@ func NewProductVariant(params NewVariantParams) *ProductVariant {
 		Price:             params.Price,
 		Currency:          params.Currency,
 		ImageUrl:          params.ImageUrl,
-		Status:            StatusActive,
+		Status:            VariantStatusActive,
 		IsDefault:         params.IsDefault,
 		AttributeValueIDs: params.AttributeValueIDs,
 

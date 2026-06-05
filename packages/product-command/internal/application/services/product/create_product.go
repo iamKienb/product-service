@@ -9,7 +9,7 @@ import (
 
 func (s *productService) CreateProduct(ctx context.Context, cmd create_product.Command) (*create_product.Result, error) {
 	if err := s.checkSlugAvailable(ctx, cmd.Slug); err != nil {
-		return nil, s.wrapError(err)
+		return nil, err
 	}
 
 	newProduct := product.NewProduct(product.NewProductParams{
@@ -26,12 +26,22 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 
 	if cmd.HasVariant {
 		for _, attr := range cmd.Attributes {
-			newProduct.AddAttribute(attr.Name, attr.Values)
+			if err := newProduct.AddAttribute(attr.Name, attr.Values); err != nil {
+				return nil, err
+			}
 		}
+	}
+
+	if len(cmd.Variants) == 0 {
+		return nil, product.ErrNoSKU
 	}
 
 	skuItems := make([]create_product.SkuItem, 0, len(cmd.Variants))
 	for index, variant := range cmd.Variants {
+		if variant.Quantity < 0 {
+			return nil, product.ErrInvalidSkuQuantity
+		}
+
 		isDefault := index == 0
 
 		variantParam := product.ProductVariantParams{
@@ -42,7 +52,10 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 			AttributeValueNames: variant.AttributeValueNames,
 		}
 
-		skuID := newProduct.AddVariant(variantParam, isDefault)
+		skuID, err := newProduct.AddVariant(variantParam, isDefault)
+		if err != nil {
+			return nil, err
+		}
 		skuItems = append(skuItems, create_product.SkuItem{
 			SkuID:    skuID,
 			Quantity: variant.Quantity,
@@ -68,7 +81,7 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 
 		return nil
 	}); err != nil {
-		return nil, s.wrapError(err)
+		return nil, err
 	}
 
 	bgCtx := context.WithoutCancel(ctx)

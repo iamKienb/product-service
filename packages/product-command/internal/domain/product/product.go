@@ -84,7 +84,11 @@ func NewProduct(params NewProductParams) *Product {
 // 		})
 // 	}
 
-func (p *Product) AddAttribute(name string, values []string) {
+func (p *Product) AddAttribute(name string, values []string) error {
+	if name == "" || len(values) == 0 {
+		return ErrInvalidAttribute
+	}
+
 	attributeID := shared.NewID[shared.AttributeID]()
 	attribute := Attribute{
 		ID:        attributeID,
@@ -95,6 +99,10 @@ func (p *Product) AddAttribute(name string, values []string) {
 	p.Attributes = append(p.Attributes, attribute)
 
 	for _, valName := range values {
+		if valName == "" {
+			return ErrInvalidAttribute
+		}
+
 		valueID := shared.NewID[shared.AttributeValueID]()
 		p.valueToID[valName] = valueID
 
@@ -104,15 +112,34 @@ func (p *Product) AddAttribute(name string, values []string) {
 			Name:        valName,
 		})
 	}
+
+	return nil
 }
 
-func (p *Product) AddVariant(params ProductVariantParams, isDefault bool) shared.SkuID {
+func (p *Product) AddVariant(params ProductVariantParams, isDefault bool) (shared.SkuID, error) {
+	if params.SkuCode == "" {
+		return shared.SkuID{}, ErrEmptySKUCode
+	}
+	if params.Price <= 0 {
+		return shared.SkuID{}, ErrNegativePrice
+	}
+	if params.Currency == "" {
+		return shared.SkuID{}, ErrEmptyCurrency
+	}
+	for _, variant := range p.Variants {
+		if variant.SkuCode == params.SkuCode {
+			return shared.SkuID{}, ErrDuplicateSKUCode
+		}
+	}
+
 	var valueIDs []shared.AttributeValueID
 
 	for _, valueName := range params.AttributeValueNames {
-		if valueID, exists := p.valueToID[valueName]; exists {
-			valueIDs = append(valueIDs, valueID)
+		valueID, exists := p.valueToID[valueName]
+		if !exists {
+			return shared.SkuID{}, ErrUnknownAttributeValue
 		}
+		valueIDs = append(valueIDs, valueID)
 	}
 
 	skuID := shared.NewID[shared.SkuID]()
@@ -133,7 +160,7 @@ func (p *Product) AddVariant(params ProductVariantParams, isDefault bool) shared
 	p.Variants = append(p.Variants, *variant)
 	p.updatePriceRange(variant.Price)
 
-	return variant.SkuID
+	return variant.SkuID, nil
 }
 
 func (p *Product) MarkAsCreated() {
