@@ -39,7 +39,7 @@ type Product struct {
 
 	Attributes      []Attribute
 	AttributeValues []AttributeValue
-	Variants        []Variant
+	Variants        []ProductVariant
 
 	shared.EventEntity
 	valueToID map[string]shared.AttributeValueID
@@ -92,35 +92,21 @@ func (p *Product) AddAttribute(name string, values []string) {
 		Name:      name,
 	}
 
-	p.AddEvent(AttributeCreatedEvent{
-		AttributeID:   attributeID,
-		ProductID:     p.ID,
-		AttributeName: attribute.Name,
-	})
-
 	p.Attributes = append(p.Attributes, attribute)
 
 	for _, valName := range values {
 		valueID := shared.NewID[shared.AttributeValueID]()
 		p.valueToID[valName] = valueID
 
-		attributeValue := AttributeValue{
+		p.AttributeValues = append(p.AttributeValues, AttributeValue{
 			ID:          valueID,
 			AttributeID: attributeID,
 			Name:        valName,
-		}
-
-		p.AddEvent(AttributeValueCreatedEvent{
-			AttributeValueID: valueID,
-			AttributeID:      attributeID,
-			ValueName:        attributeValue.Name,
 		})
-		p.AttributeValues = append(p.AttributeValues, attributeValue)
 	}
 }
 
-func (p *Product) AddVariant(params VariantParam, isDefault bool) shared.SkuID {
-	skuID := shared.NewID[shared.SkuID]()
+func (p *Product) AddVariant(params ProductVariantParams, isDefault bool) shared.SkuID {
 	var valueIDs []shared.AttributeValueID
 
 	for _, valueName := range params.AttributeValueNames {
@@ -129,40 +115,67 @@ func (p *Product) AddVariant(params VariantParam, isDefault bool) shared.SkuID {
 		}
 	}
 
-	variant := Variant{
+	skuID := shared.NewID[shared.SkuID]()
+	variant := NewProductVariant(NewVariantParams{
 		SkuID:             skuID,
 		ProductID:         p.ID,
 		ShopID:            p.ShopID,
+		CreatedBy:         p.CreatedBy,
+		CreatedAt:         p.CreatedAt,
 		SkuCode:           params.SkuCode,
 		Price:             params.Price,
 		Currency:          params.Currency,
 		ImageUrl:          params.ImageUrl,
 		IsDefault:         isDefault,
 		AttributeValueIDs: valueIDs,
-
-		CreatedBy: p.CreatedBy,
-		CreatedAt: p.CreatedAt,
-	}
-
-	p.AddEvent(VariantCreatedEvent{
-		SkuID:             skuID,
-		ProductID:         variant.ProductID,
-		ShopID:            variant.ShopID,
-		SkuCode:           variant.SkuCode,
-		Price:             variant.Price,
-		Currency:          variant.Currency,
-		ImageUrl:          variant.ImageUrl,
-		AttributeValueIDs: variant.AttributeValueIDs,
-
-		CreatedBy: variant.CreatedBy,
-		CreatedAt: variant.CreatedAt,
 	})
 
-	p.Variants = append(p.Variants, variant)
-	return skuID
+	p.Variants = append(p.Variants, *variant)
+	p.updatePriceRange(variant.Price)
+
+	return variant.SkuID
 }
 
 func (p *Product) MarkAsCreated() {
+	attrPayloads := make([]AttributePayload, 0, len(p.Attributes))
+	for _, attr := range p.Attributes {
+		attrValsPayloads := make([]AttributeValuePayload, 0)
+
+		for _, val := range p.AttributeValues {
+			if val.AttributeID == attr.ID {
+				attrValsPayloads = append(attrValsPayloads, AttributeValuePayload{
+					AttributeValueID: val.ID.String(),
+					ValueName:        val.Name,
+				})
+			}
+		}
+
+		attrPayloads = append(attrPayloads, AttributePayload{
+			AttributeID:   attr.ID.String(),
+			AttributeName: attr.Name,
+			Values:        attrValsPayloads,
+		})
+	}
+
+	variantPayloads := make([]VariantPayload, 0, len(p.Variants))
+	for _, variant := range p.Variants {
+		attrValueStrings := make([]string, 0, len(variant.AttributeValueIDs))
+		for _, id := range variant.AttributeValueIDs {
+			attrValueStrings = append(attrValueStrings, id.String())
+		}
+
+		variantPayloads = append(variantPayloads, VariantPayload{
+			SkuID:             variant.SkuID.String(),
+			SkuCode:           variant.SkuCode,
+			Price:             variant.Price,
+			Currency:          variant.Currency,
+			ImageUrl:          variant.ImageUrl,
+			IsDefault:         variant.IsDefault,
+			AttributeValueIDs: attrValueStrings,
+		})
+
+	}
+
 	p.AddEvent(ProductCreatedEvent{
 		ProductID:   p.ID,
 		ShopID:      p.ShopID,
@@ -178,6 +191,8 @@ func (p *Product) MarkAsCreated() {
 		HasVariant:  p.HasVariant,
 		CreatedBy:   p.CreatedBy,
 		CreatedAt:   p.CreatedAt,
+		Attributes:  attrPayloads,
+		Variants:    variantPayloads,
 	})
 }
 
@@ -188,25 +203,13 @@ func (p *Product) MarkAsDeleted() {
 	})
 }
 
-func (p *Product) recalculatePriceRange() {
-	if len(p.Variants) == 0 {
-		return
+func (p *Product) updatePriceRange(price int64) {
+	if p.PriceMin == 0 || price < p.PriceMin {
+		p.PriceMin = price
 	}
-
-	min := p.Variants[0].Price
-	max := p.Variants[0].Price
-
-	for _, variant := range p.Variants {
-		if variant.Price < min {
-			min = variant.Price
-		}
-		if variant.Price > max {
-			max = variant.Price
-		}
+	if price > p.PriceMax {
+		p.PriceMax = price
 	}
-
-	p.PriceMin = min
-	p.PriceMax = max
 }
 
 // func (p *Product) UpdateVariant(params updateVariantParams) error {

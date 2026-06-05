@@ -34,3 +34,12 @@ SELECT
     unnest(@sku_ids::uuid[]),
     unnest(@attribute_value_ids::uuid[])
 ON CONFLICT DO NOTHING;
+
+
+-- name: FindPriceSkusByIDs :many
+SELECT 
+    sku_id, 
+    price
+FROM product_variants
+WHERE sku_id = ANY(@sku_ids::uuid[])
+    AND shop_id = @shop_id::uuid;

@@ -35,13 +35,13 @@ type Command struct {
 }
 
 type SkuItem struct {
-	SkuID    string
+	SkuID    shared.SkuID
 	Quantity int32
 }
 
 type Result struct {
-	ProductID string
-	ShopID    string
+	ShopID    shared.ShopID
+	ProductID shared.ProductID
 	SkuItems  []SkuItem
 }
 

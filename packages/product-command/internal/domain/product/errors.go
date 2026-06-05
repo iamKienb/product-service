@@ -12,4 +12,5 @@ var (
 	ErrNegativePrice           = errors.New("price must not be negative")
 	ErrEmptyCurrency           = errors.New("currency must not be empty")
 	ErrProductSlugTaken        = errors.New("product_slug_taken")
+	ErrProductNotFound         = errors.New("product_not_found")
 )

@@ -42,10 +42,8 @@ github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2 h1:sGm2vDRFUrQJO/Veii4h4z
 github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2/go.mod h1:wd1YpapPLivG6nQgbf7ZkG1hhSOXDhhn4MLTknx2aAc=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 h1:asbCHRVmodnJTuQ3qamDwqVOIjwqUPTYmYuemVOx+Ys=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0/go.mod h1:ggCgvZ2r7uOoQjOyu2Y1NhHmEPPzzuhWgcza5M1Ji1I=
-github.com/iamKienb/api-contract v0.2.0 h1:JlfbMoG6OzXtehdw6lETCYyVa+aagjBxdIh3xb3kFYs=
-github.com/iamKienb/api-contract v0.2.0/go.mod h1:pv74H2RaEML5EjxsQrYn+Gw8qhT4lqmTLZ+wM6G3WqE=
-github.com/iamKienb/api-contract v0.2.1 h1:QppIF5w/wxukw850OX4QIfFdT9CyAk7s5dNBPRAsiXc=
-github.com/iamKienb/api-contract v0.2.1/go.mod h1:pv74H2RaEML5EjxsQrYn+Gw8qhT4lqmTLZ+wM6G3WqE=
+github.com/iamKienb/api-contract v0.2.6 h1:RwriGizEBquaXnPSxIVj5CHyIlBPCCrL56ljRnzuIpM=
+github.com/iamKienb/api-contract v0.2.6/go.mod h1:pv74H2RaEML5EjxsQrYn+Gw8qhT4lqmTLZ+wM6G3WqE=
 github.com/iamKienb/go-core v0.4.7 h1:8Uv7IdwQjiHkBn4tFk/Kj3RRGUE9Eze5jqOW46xcPkc=
 github.com/iamKienb/go-core v0.4.7/go.mod h1:TK8BRZ62GtppD7AXIdCgpf4ilw0USvAbF6F1KMjiZcA=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=

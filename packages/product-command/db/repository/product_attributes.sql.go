@@ -15,7 +15,7 @@ const batchCreateAttributeValues = `-- name: BatchCreateAttributeValues :exec
 INSERT INTO attribute_values (
     id, 
     product_attribute_id, 
-    value
+    name
 ) 
 SELECT
     unnest($1::uuid[]),

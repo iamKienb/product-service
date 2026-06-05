@@ -15,7 +15,7 @@ const countProductBySlug = `-- name: CountProductBySlug :one
 SELECT
     1
 FROM products
-WHERE slug = $1
+WHERE slug = $1::text
 `
 
 func (q *Queries) CountProductBySlug(ctx context.Context, slug string) (int32, error) {
@@ -43,7 +43,20 @@ INSERT INTO products (
     created_at
 )
 VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    $1::uuid,
+    $2::uuid,
+    $3::text,
+    $4::text, 
+    $5::text, 
+    $6::text, 
+    $7::text, 
+    $8::text, 
+    $9::bigint, 
+    $10::bigint, 
+    $11::text, 
+    $12::boolean, 
+    $13::uuid, 
+    $14::timestamptz
 )
 `
 
@@ -59,7 +72,7 @@ type CreateProductParams struct {
 	PriceMin    int64
 	PriceMax    int64
 	Status      string
-	HasVariant  pgtype.Bool
+	HasVariant  bool
 	CreatedBy   pgtype.UUID
 	CreatedAt   pgtype.Timestamptz
 }

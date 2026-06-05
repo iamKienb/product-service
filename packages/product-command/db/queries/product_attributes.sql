@@ -14,7 +14,7 @@ SELECT
 INSERT INTO attribute_values (
     id, 
     product_attribute_id, 
-    value
+    name
 ) 
 SELECT
     unnest(@ids::uuid[]),

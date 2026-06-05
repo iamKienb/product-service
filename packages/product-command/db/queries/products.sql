@@ -16,7 +16,20 @@ INSERT INTO products (
     created_at
 )
 VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    @id::uuid,
+    @shop_id::uuid,
+    @name::text,
+    @slug::text, 
+    @description::text, 
+    @brand::text, 
+    @thumb_url::text, 
+    @video_url::text, 
+    @price_min::bigint, 
+    @price_max::bigint, 
+    @status::text, 
+    @has_variant::boolean, 
+    @created_by::uuid, 
+    @created_at::timestamptz
 );
 
 -- name: ListProductsByShop :many
@@ -29,7 +42,7 @@ LIMIT $2 OFFSET $3;
 SELECT
     1
 FROM products
-WHERE slug = $1;
+WHERE slug = @slug::text;
 
 -- -- name: GetProductDetailWithVariants :one
 -- SELECT 

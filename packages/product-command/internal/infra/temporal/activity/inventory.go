@@ -13,8 +13,8 @@ func NewInventoryActivity(client port.InventoryClient) *InventoryActivity {
 	return &InventoryActivity{client: client}
 }
 
-func (a *InventoryActivity) CreateInventory(ctx context.Context, req port.CreateInventoryRequest) error {
-	return a.client.CreateInventory(ctx, req)
+func (a *InventoryActivity) CreateInventories(ctx context.Context, req port.CreateInventoryRequest) error {
+	return a.client.CreateInventories(ctx, req)
 }
 
 func (a *InventoryActivity) DeleteInventory(ctx context.Context, skuIDs []string) error {

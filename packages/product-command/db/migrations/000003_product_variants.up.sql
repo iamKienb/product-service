@@ -27,3 +27,4 @@ CREATE Table product_attribute_values (
 );
 
 CREATE INDEX idx_product_variants_product_id ON product_variants(product_id);
+CREATE INDEX idx_product_variants_shop_id_sku_id ON product_variants (shop_id, sku_id);

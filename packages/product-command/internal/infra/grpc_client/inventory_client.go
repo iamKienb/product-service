@@ -21,7 +21,7 @@ func NewInventoryClient(httpClient *http.Client, baseURL string) port.InventoryC
 	}
 }
 
-func (c *inventoryClient) CreateInventory(ctx context.Context, req port.CreateInventoryRequest) error {
+func (c *inventoryClient) CreateInventories(ctx context.Context, req port.CreateInventoryRequest) error {
 	items := make([]*inventory.InventoryItem, 0, len(req.Items))
 	for _, item := range req.Items {
 		items = append(items, &inventory.InventoryItem{

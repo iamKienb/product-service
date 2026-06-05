@@ -5,17 +5,18 @@ import (
 	"product-command-module/internal/domain/shared"
 
 	"github.com/iamKienb/api-contract/gen/product"
+	"github.com/iamKienb/go-core/app_error"
 )
 
 func ToCreateProductCommand(userID string, req *product.CreateProductsRequest) (create_product.Command, error) {
-	parsedUserID, err := shared.ParseToRawID[shared.UserID](userID)
+	parsedUserID, err := parseUserID(userID)
 	if err != nil {
-		return create_product.Command{}, shared.ErrInvalidUserID
+		return create_product.Command{}, err
 	}
 
-	shopID, err := shared.ParseToRawID[shared.ShopID](req.GetShopId())
+	parsedShopID, err := parseShopID(req.GetShopId())
 	if err != nil {
-		return create_product.Command{}, shared.ErrInvalidShopID
+		return create_product.Command{}, err
 	}
 
 	attributes := make([]create_product.ProductAttribute, 0, len(req.GetAttributes()))
@@ -43,7 +44,7 @@ func ToCreateProductCommand(userID string, req *product.CreateProductsRequest) (
 	}
 
 	return create_product.Command{
-		ShopID:      shopID,
+		ShopID:      parsedShopID,
 		UserID:      parsedUserID,
 		Name:        req.GetName(),
 		Slug:        req.GetSlug(),
@@ -62,6 +63,33 @@ func ToCreateProductCommand(userID string, req *product.CreateProductsRequest) (
 
 func ToCreateProductResponse(result *create_product.Result) *product.CreateProductsResponse {
 	return &product.CreateProductsResponse{
-		WorkflowId: result.ProductID,
+		WorkflowId: result.ProductID.String(),
 	}
+}
+
+func parseUserID(value string) (shared.UserID, error) {
+	parsed, err := shared.ParseToRawID[shared.UserID](value)
+	if err != nil {
+		return parsed, app_error.New(app_error.KindValidation, "user_invalid", "invalid user id", err)
+	}
+
+	return parsed, nil
+}
+
+func parseShopID(value string) (shared.ShopID, error) {
+	parsed, err := shared.ParseToRawID[shared.ShopID](value)
+	if err != nil {
+		return parsed, app_error.New(app_error.KindValidation, "shop_invalid", "invalid shop id", err)
+	}
+
+	return parsed, nil
+}
+
+func parseSkuID(value string) (shared.SkuID, error) {
+	parsed, err := shared.ParseToRawID[shared.SkuID](value)
+	if err != nil {
+		return parsed, app_error.New(app_error.KindValidation, "sku_invalid", "invalid sku id", err)
+	}
+
+	return parsed, nil
 }

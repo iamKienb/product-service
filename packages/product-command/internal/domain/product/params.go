@@ -2,6 +2,7 @@ package product
 
 import (
 	"product-command-module/internal/domain/shared"
+	"time"
 )
 
 type AttributeParam struct {
@@ -9,7 +10,7 @@ type AttributeParam struct {
 	Values []string
 }
 
-type VariantParam struct {
+type ProductVariantParams struct {
 	SkuCode             string
 	Price               int64
 	Currency            string
@@ -26,6 +27,19 @@ type NewProductParams struct {
 	Brand       string
 	ThumbUrl    string
 	VideoUrl    string
+	HasVariant  bool
+}
 
-	HasVariant bool
+type NewVariantParams struct {
+	SkuID             shared.SkuID
+	ProductID         shared.ProductID
+	ShopID            shared.ShopID
+	SkuCode           string
+	Price             int64
+	Currency          string
+	ImageUrl          string
+	IsDefault         bool
+	AttributeValueIDs []shared.AttributeValueID
+	CreatedBy         shared.UserID
+	CreatedAt         time.Time
 }

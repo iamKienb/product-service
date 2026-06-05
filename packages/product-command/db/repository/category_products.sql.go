@@ -12,10 +12,10 @@ import (
 )
 
 const countBySlug = `-- name: CountBySlug :one
-SELECT 
+SELECT
     1
 FROM categories 
-WHERE slug = $1
+WHERE slug = $1::text
 `
 
 func (q *Queries) CountBySlug(ctx context.Context, slug string) (int32, error) {
@@ -26,7 +26,7 @@ func (q *Queries) CountBySlug(ctx context.Context, slug string) (int32, error) {
 }
 
 const listCategoriesByProductID = `-- name: ListCategoriesByProductID :many
-SELECT c.id, c.shop_id, c.status, c.parent_id, c.name, c.slug, c.created_by, c.updated_by, c.created_at, c.updated_at 
+SELECT c.id, c.shop_id, c.status, c.parent_id, c.name, c.slug, c.created_by, c.updated_by, c.created_at, c.updated_at
 FROM categories c
 JOIN category_products cp ON c.id = cp.category_id
 WHERE cp.shop_id = $1 AND cp.product_id = $2
@@ -70,7 +70,8 @@ func (q *Queries) ListCategoriesByProductID(ctx context.Context, arg ListCategor
 
 const removeProductFromAllCategories = `-- name: RemoveProductFromAllCategories :exec
 DELETE FROM category_products
-WHERE shop_id = $1 AND product_id = $2
+WHERE shop_id = $1::uuid 
+    AND product_id = $2::uuid
 `
 
 type RemoveProductFromAllCategoriesParams struct {
@@ -84,8 +85,12 @@ func (q *Queries) RemoveProductFromAllCategories(ctx context.Context, arg Remove
 }
 
 const removeProductFromCategory = `-- name: RemoveProductFromCategory :exec
+
+
 DELETE FROM category_products
-WHERE shop_id = $1 AND category_id = $2 AND product_id = $3
+WHERE shop_id = $1::uuid 
+    AND category_id = $2::uuid 
+    AND product_id = $3::uuid
 `
 
 type RemoveProductFromCategoryParams struct {
@@ -94,6 +99,23 @@ type RemoveProductFromCategoryParams struct {
 	ProductID  pgtype.UUID
 }
 
+// INSERT INTO category_products (
+//
+//	shop_id,
+//	category_id,
+//	product_id
+//
+// )
+// FROM (
+//
+//	SELECT * FROM ROWS FROM(
+//	    unnest(@shop_id::uuid[]),
+//	    unnest(@category_id::uuid[]),
+//	    unnest(@product_id::uuid[])
+//	) AS tmp(shop_id, category_id, product_id)
+//
+// ) AS u
+// ON CONFLICT (shop_id, category_id, product_id) DO NOTHING;
 func (q *Queries) RemoveProductFromCategory(ctx context.Context, arg RemoveProductFromCategoryParams) error {
 	_, err := q.db.Exec(ctx, removeProductFromCategory, arg.ShopID, arg.CategoryID, arg.ProductID)
 	return err

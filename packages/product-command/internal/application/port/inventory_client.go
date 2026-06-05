@@ -10,12 +10,11 @@ type SkuItem struct {
 }
 
 type CreateInventoryRequest struct {
-	ShopID    string
-	ProductID string
-	Items     []SkuItem
+	ShopID string
+	Items  []SkuItem
 }
 
 type InventoryClient interface {
-	CreateInventory(ctx context.Context, req CreateInventoryRequest) error
+	CreateInventories(ctx context.Context, req CreateInventoryRequest) error
 	DeleteInventory(ctx context.Context, skuIDs []string) error
 }

@@ -2,8 +2,9 @@ package create_product
 
 import (
 	"context"
-	"errors"
 	"product-command-module/internal/application/port"
+
+	"github.com/iamKienb/go-core/app_error"
 )
 
 type workflowRunner interface {
@@ -33,7 +34,7 @@ func (h *handler) Execute(ctx context.Context, cmd Command) (*Result, error) {
 	}
 
 	if !result.IsAllowed {
-		return nil, errors.New(result.Message)
+		return nil, app_error.Forbidden(result.Message)
 	}
 
 	return h.workflow.CreateProduct(ctx, cmd)

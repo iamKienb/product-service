@@ -23,7 +23,14 @@ INSERT INTO categories (
     created_at
 ) 
 VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1::uuid,
+    $2::uuid,
+    $3::text,
+    $4::uuid,
+    $5::text, 
+    $6::text, 
+    $7::uuid, 
+    $8::timestamptz
 )
 `
 
@@ -54,7 +61,8 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 
 const deleteCategory = `-- name: DeleteCategory :exec
 DELETE FROM categories 
-WHERE id = $1 AND shop_id = $2
+WHERE id = $1 
+    AND shop_id = $2
 `
 
 type DeleteCategoryParams struct {
@@ -69,7 +77,8 @@ func (q *Queries) DeleteCategory(ctx context.Context, arg DeleteCategoryParams) 
 
 const getCategoryByID = `-- name: GetCategoryByID :one
 SELECT id, shop_id, status, parent_id, name, slug, created_by, updated_by, created_at, updated_at FROM categories 
-WHERE id = $1 AND shop_id = $2
+WHERE id = $1 
+    AND shop_id = $2
 `
 
 type GetCategoryByIDParams struct {
@@ -97,7 +106,8 @@ func (q *Queries) GetCategoryByID(ctx context.Context, arg GetCategoryByIDParams
 
 const getCategoryBySlug = `-- name: GetCategoryBySlug :one
 SELECT id, shop_id, status, parent_id, name, slug, created_by, updated_by, created_at, updated_at FROM categories 
-WHERE shop_id = $1 AND slug = $2
+WHERE shop_id = $1 
+    AND slug = $2
 `
 
 type GetCategoryBySlugParams struct {
@@ -125,7 +135,8 @@ func (q *Queries) GetCategoryBySlug(ctx context.Context, arg GetCategoryBySlugPa
 
 const getCategoryChildren = `-- name: GetCategoryChildren :many
 SELECT id, shop_id, status, parent_id, name, slug, created_by, updated_by, created_at, updated_at FROM categories
-WHERE shop_id = $1 AND parent_id = $2
+WHERE shop_id = $1 
+    AND parent_id = $2
 ORDER BY name ASC
 `
 
@@ -174,7 +185,8 @@ SET
     parent_id = $4,
     updated_by = $5,
     updated_at = NOW()
-WHERE id = $6 AND shop_id = $7
+WHERE id = $6 
+    AND shop_id = $7
 RETURNING id, shop_id, status, parent_id, name, slug, created_by, updated_by, created_at, updated_at
 `
 

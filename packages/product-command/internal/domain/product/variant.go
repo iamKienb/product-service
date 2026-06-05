@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Variant struct {
+type ProductVariant struct {
 	SkuID             shared.SkuID
 	ProductID         shared.ProductID
 	ShopID            shared.ShopID
@@ -21,4 +21,24 @@ type Variant struct {
 
 	CreatedAt time.Time
 	UpdatedAt *time.Time
+}
+
+func NewProductVariant(params NewVariantParams) *ProductVariant {
+	return &ProductVariant{
+		SkuID:             params.SkuID,
+		ProductID:         params.ProductID,
+		ShopID:            params.ShopID,
+		SkuCode:           params.SkuCode,
+		Price:             params.Price,
+		Currency:          params.Currency,
+		ImageUrl:          params.ImageUrl,
+		IsDefault:         params.IsDefault,
+		AttributeValueIDs: params.AttributeValueIDs,
+
+		CreatedBy: params.CreatedBy,
+		CreatedAt: params.CreatedAt,
+
+		UpdatedAt: nil,
+		UpdatedBy: nil,
+	}
 }

@@ -1,0 +1,154 @@
+{
+    "settings": {
+        "number_of_shards": 2,
+        "number_of_replicas": 1,
+        "analysis": {
+            "normalizer": {
+                "standard_normalizer": {
+                    "type": "custom",
+                    "filter": [
+                        "lowercase",
+                        "asciifolding"
+                    ]
+                }
+            },
+            "analyzer": {
+                "standard_ascii": {
+                    "tokenizer": "icu_tokenizer",
+                    "filter": [
+                        "lowercase",
+                        "icu_folding",
+                        "icu_normalizer"
+                    ]
+                }
+            }
+        }
+    },
+    "mappings": {
+        "properties": {
+            "id": {
+                "type": "keyword"
+            },
+            "shop_id": {
+                "type": "keyword"
+            },
+            "name": {
+                "type": "text",
+                "analyzer": "standard_ascii",
+                "fields": {
+                    "raw": {
+                        "type": "keyword",
+                        "normalizer": "standard_normalizer"
+                    }
+                }
+            },
+            "slug": {
+                "type": "keyword"
+            },
+            "description": {
+                "type": "text",
+                "analyzer": "standard_ascii"
+            },
+            "brand": {
+                "type": "keyword",
+                "normalizer": "standard_normalizer"
+            },
+            "thumb_url": {
+                "type": "keyword",
+                "index": false
+            },
+            "video_url": {
+                "type": "keyword",
+                "index": false
+            },
+            "price_min": {
+                "type": "long"
+            },
+            "price_max": {
+                "type": "long"
+            },
+            "status": {
+                "type": "keyword"
+            },
+            "has_variant": {
+                "type": "boolean"
+            },
+            "variants": {
+                "type": "nested",
+                "properties": {
+                    "sku_id": {
+                        "type": "keyword"
+                    },
+                    "sku_code": {
+                        "type": "keyword",
+                        "normalizer": "standard_normalizer"
+                    },
+                    "price": {
+                        "type": "long"
+                    },
+                    "currency": {
+                        "type": "keyword"
+                    },
+                    "image_url": {
+                        "type": "keyword",
+                        "index": false
+                    },
+                    "status": {
+                        "type": "keyword"
+                    },
+                    "is_default": {
+                        "type": "boolean"
+                    },
+                    "attribute_value_ids": {
+                        "type": "keyword"
+                    },
+                    "created_by": {
+                        "type": "keyword",
+                        "index": false
+                    },
+                    "updated_by": {
+                        "type": "keyword",
+                        "index": false
+                    },
+                    "created_at": {
+                        "type": "date"
+                    },
+                    "updated_at": {
+                        "type": "date"
+                    }
+                }
+            },
+            "attributes": {
+                "type": "nested",
+                "properties": {
+                    "attribute_id": {
+                        "type": "keyword"
+                    },
+                    "attribute_name": {
+                        "type": "keyword",
+                        "normalizer": "standard_normalizer"
+                    },
+                    "value_id": {
+                        "type": "keyword"
+                    },
+                    "value_name": {
+                        "type": "keyword",
+                        "normalizer": "standard_normalizer"
+                    }
+                }
+            },
+            "created_by": {
+                "type": "keyword"
+            },
+            "updated_by": {
+                "type": "keyword"
+            },
+            "created_at": {
+                "type": "date"
+            },
+            "updated_at": {
+                "type": "date"
+            }
+        }
+    }
+}

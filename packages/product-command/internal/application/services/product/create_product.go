@@ -34,7 +34,7 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 	for index, variant := range cmd.Variants {
 		isDefault := index == 0
 
-		variantParam := product.VariantParam{
+		variantParam := product.ProductVariantParams{
 			SkuCode:             variant.SkuCode,
 			Price:               variant.Price,
 			Currency:            variant.Currency,
@@ -44,7 +44,7 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 
 		skuID := newProduct.AddVariant(variantParam, isDefault)
 		skuItems = append(skuItems, create_product.SkuItem{
-			SkuID:    skuID.String(),
+			SkuID:    skuID,
 			Quantity: variant.Quantity,
 		})
 	}
@@ -77,8 +77,8 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 	}()
 
 	return &create_product.Result{
-		ProductID: newProduct.ID.String(),
-		ShopID:    cmd.ShopID.String(),
+		ShopID:    cmd.ShopID,
+		ProductID: newProduct.ID,
 		SkuItems:  skuItems,
 	}, nil
 }

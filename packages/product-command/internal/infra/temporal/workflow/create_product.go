@@ -56,18 +56,17 @@ func CreateProductWorkflow(ctx workflow.Context, cmd create_product.Command, cfg
 	items := make([]port.SkuItem, 0, len(result.SkuItems))
 	for _, item := range result.SkuItems {
 		items = append(items, port.SkuItem{
-			SkuID:    item.SkuID,
+			SkuID:    item.SkuID.String(),
 			Quantity: item.Quantity,
 		})
 	}
 
 	params := port.CreateInventoryRequest{
-		ShopID:    result.ProductID,
-		ProductID: result.ProductID,
-		Items:     items,
+		ShopID: cmd.ShopID.String(),
+		Items:  items,
 	}
 
-	if err := workflow.ExecuteActivity(activityCtx, inventoryAct.CreateInventory, params).Get(ctx, nil); err != nil {
+	if err := workflow.ExecuteActivity(activityCtx, inventoryAct.CreateInventories, params).Get(ctx, nil); err != nil {
 		executeRollback()
 		return nil, fmt.Errorf("create sku failed: %w", err)
 	}
