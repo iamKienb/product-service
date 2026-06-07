@@ -7,8 +7,10 @@ import (
 	"product-command-module/internal/application/port"
 	"product-command-module/internal/bootstrap/config"
 	"product-command-module/internal/domain/product"
+	"product-command-module/internal/infra/cache"
 	"product-command-module/internal/infra/grpc_client"
 	outboxPg "product-command-module/internal/infra/postgres/outbox"
+	productPg "product-command-module/internal/infra/postgres/product"
 	"product-command-module/internal/infra/temporal/runner"
 	"time"
 
@@ -71,7 +73,9 @@ func NewInfraModule(ctx context.Context, cfg *config.ProductCommandConfig) (*Inf
 		TemporalClient: tClient,
 		WorkflowRunner: workflowRunner,
 
-		OutboxRepo: outboxPg.NewRepository(pgService),
+		ProductRepo:  productPg.NewRepository(pgService),
+		ProductCache: cache.NewProductCache(redisService),
+		OutboxRepo:   outboxPg.NewRepository(pgService),
 
 		ShopClient: grpc_client.NewShopClient(httpClient, cfg.Upstream.ShopCommandURL),
 

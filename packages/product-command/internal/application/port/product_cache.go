@@ -5,6 +5,6 @@ import (
 )
 
 type ProductCache interface {
-	GetSlugFromBloomFilter(ctx context.Context, slug string) (int, error)
-	AddSlugToBloomFilter(ctx context.Context, slug string) error
+	IsSlugKnown(ctx context.Context, slug string) (bool, error)
+	RememberSlug(ctx context.Context, slug string) error
 }

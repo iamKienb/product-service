@@ -109,10 +109,12 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 		return nil, err
 	}
 
-	bgCtx := context.WithoutCancel(ctx)
-	go func() {
-		_ = s.productCache.AddSlugToBloomFilter(bgCtx, cmd.Slug)
-	}()
+	if s.productCache != nil {
+		bgCtx := context.WithoutCancel(ctx)
+		go func() {
+			_ = s.productCache.RememberSlug(bgCtx, cmd.Slug)
+		}()
+	}
 
 	return &create_product.Result{
 		ShopID:    cmd.ShopID,
@@ -193,15 +195,6 @@ func statusForCreateProductAction(action string) (product.ProductStatus, error) 
 }
 
 func (s *productService) findExistingProductBySlug(ctx context.Context, cmd create_product.Command) (*product.Product, error) {
-	exists, err := s.productCache.GetSlugFromBloomFilter(ctx, cmd.Slug)
-	if err != nil {
-		return nil, err
-	}
-
-	if exists == 0 {
-		return nil, product.ErrProductNotFound
-	}
-
 	isDuplicateSlug, err := s.productRepo.CheckSlugExists(ctx, cmd.ShopID, cmd.Slug)
 	if err != nil {
 		return nil, err
