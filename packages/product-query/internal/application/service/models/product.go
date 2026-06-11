@@ -26,8 +26,8 @@ type Product struct {
 }
 
 type ProductVariant struct {
-	SkuID             string   `json:"sku_id"`
-	SkuCode           string   `json:"sku_code"`
+	SkuID             string   `json:"id"`
+	SkuCode           string   `json:"code"`
 	Price             int64    `json:"price"`
 	Currency          string   `json:"currency"`
 	ImageURL          string   `json:"image_url"`
@@ -42,9 +42,12 @@ type ProductVariant struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type Value struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
 type ProductAttr struct {
-	AttributeID   string `json:"attribute_id"`
-	AttributeName string `json:"attribute_name"`
-	ValueID       string `json:"value_id"`
-	ValueName     string `json:"value_name"`
+	ID     string  `json:"id"`
+	Name   string  `json:"name"`
+	Values []Value `json:"values"`
 }

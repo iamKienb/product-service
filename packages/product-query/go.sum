@@ -31,6 +31,8 @@ github.com/iamKienb/api-contract v0.2.4 h1:AnFmsmdqWhLYroAirI47nSCWThRSAxgWlSSEO
 github.com/iamKienb/api-contract v0.2.4/go.mod h1:pv74H2RaEML5EjxsQrYn+Gw8qhT4lqmTLZ+wM6G3WqE=
 github.com/iamKienb/go-core v0.4.7 h1:8Uv7IdwQjiHkBn4tFk/Kj3RRGUE9Eze5jqOW46xcPkc=
 github.com/iamKienb/go-core v0.4.7/go.mod h1:TK8BRZ62GtppD7AXIdCgpf4ilw0USvAbF6F1KMjiZcA=
+github.com/iamKienb/go-core v1.3.0 h1:ZAQPUFp79zhLL2mrLeVlrcsSQ4NrWqmxuH3OCz1QfKk=
+github.com/iamKienb/go-core v1.3.0/go.mod h1:TK8BRZ62GtppD7AXIdCgpf4ilw0USvAbF6F1KMjiZcA=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/klauspost/compress v1.15.9 h1:wKRjX6JRtDdrE9qwa4b/Cip7ACOshUI4smpCQanqjSY=

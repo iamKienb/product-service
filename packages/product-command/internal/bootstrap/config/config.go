@@ -7,17 +7,16 @@ import (
 )
 
 type TemporalConfig struct {
-	Address            string        `env:"TEMPORAL_ADDRESS"`
-	Namespace          string        `env:"TEMPORAL_NAMESPACE"`
-	ProductTaskQueue   string        `env:"TEMPORAL_PRODUCT_TASK_QUEUE"`
-	InventoryTaskQueue string        `env:"TEMPORAL_INVENTORY_TASK_QUEUE"`
-	ActivityTimeout    time.Duration `env:"TEMPORAL_ACTIVITY_TIMEOUT"`
-	RollbackTimeout    time.Duration `env:"TEMPORAL_ROLLBACK_TIMEOUT"`
+	Address          string        `env:"_TEMPORAL_ADDRESS"`
+	Namespace        string        `env:"_TEMPORAL_NAMESPACE"`
+	ProductTaskQueue string        `env:"_TEMPORAL_PRODUCT_TASK_QUEUE"`
+	ActivityTimeout  time.Duration `env:"_TEMPORAL_ACTIVITY_TIMEOUT"`
+	RollbackTimeout  time.Duration `env:"_TEMPORAL_ROLLBACK_TIMEOUT"`
 }
 
 type UpstreamConfig struct {
-	ShopCommandURL      string `env:"SHOP_COMMAND_URL" envDefault:"http://localhost:8002"`
-	InventoryCommandURL string `env:"INVENTORY_COMMAND_URL" envDefault:"http://localhost:8004"`
+	ShopCommandURL      string `env:"_SHOP_COMMAND_URL" envDefault:"http://localhost:8002"`
+	InventoryCommandURL string `env:"_INVENTORY_COMMAND_URL" envDefault:"http://localhost:8004"`
 }
 
 type ProductCommandConfig struct {

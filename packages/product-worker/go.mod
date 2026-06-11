@@ -2,7 +2,7 @@ module product-worker-module
 
 go 1.25.8
 
-require github.com/iamKienb/go-core v0.4.7
+require github.com/iamKienb/go-core v1.3.0
 
 require (
 	github.com/caarlos0/env/v11 v11.4.0 // indirect

@@ -31,7 +31,7 @@ type Command struct {
 	Attributes  []ProductAttribute
 	Variants    []ProductVariant
 	HasVariant  bool
-	Action      string
+	Status      string
 }
 
 type SkuItem struct {

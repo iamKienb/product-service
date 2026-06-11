@@ -15,6 +15,7 @@ type ProductDeletedHandler struct {
 func NewProductDeletedHandler(repo port.ESRepository, alias string) *ProductDeletedHandler {
 	return &ProductDeletedHandler{repo: repo, alias: alias}
 }
+
 func (h *ProductDeletedHandler) Handle(ctx context.Context, raw json.RawMessage) error {
 	var payload events.ProductDeleted
 	if err := json.Unmarshal(raw, &payload); err != nil {

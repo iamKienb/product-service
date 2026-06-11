@@ -57,7 +57,7 @@ func ToCreateProductCommand(userID string, req *product.CreateProductsRequest) (
 		Attributes: attributes,
 		Variants:   variants,
 		HasVariant: req.HasVariant,
-		Action:     req.GetAction(),
+		Status:     req.GetStatus(),
 	}, nil
 }
 

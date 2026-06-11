@@ -27,7 +27,7 @@ type aliasMigration struct {
 	Glob  string
 }
 
-const MigrationIndex = ".migration_history"
+const MigrationIndex = ".migration_product_history"
 
 func main() {
 	ctx := context.Background()

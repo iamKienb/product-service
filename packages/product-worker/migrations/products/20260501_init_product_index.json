@@ -75,11 +75,12 @@
             },
             "variants": {
                 "type": "nested",
+                "dynamic": "strict",
                 "properties": {
-                    "sku_id": {
+                    "id": {
                         "type": "keyword"
                     },
-                    "sku_code": {
+                    "code": {
                         "type": "keyword",
                         "normalizer": "standard_normalizer"
                     },
@@ -120,20 +121,27 @@
             },
             "attributes": {
                 "type": "nested",
+                "dynamic": "strict",
                 "properties": {
-                    "attribute_id": {
+                    "id": {
                         "type": "keyword"
                     },
-                    "attribute_name": {
+                    "name": {
                         "type": "keyword",
                         "normalizer": "standard_normalizer"
                     },
-                    "value_id": {
-                        "type": "keyword"
-                    },
-                    "value_name": {
-                        "type": "keyword",
-                        "normalizer": "standard_normalizer"
+                    "values": {
+                        "type": "nested",
+                        "dynamic": "strict",
+                        "properties": {
+                            "id": {
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "keyword",
+                                "normalizer": "standard_normalizer"
+                            }
+                        }
                     }
                 }
             },

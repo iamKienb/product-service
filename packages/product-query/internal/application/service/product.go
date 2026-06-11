@@ -23,6 +23,7 @@ const (
 	variantInnerHitName  = "sku_variants"
 	errCheckoutSkuAbsent = "checkout product validation failed: sku %s not found or invalid for shop %s"
 	errCheckoutSkuStatus = "checkout product validation failed: sku %s is currently status %s"
+	errShopNotFound      = "shop is not found"
 )
 
 func NewProductService(esClient *elasticsearch.TypedClient, index string) *productService {
@@ -38,7 +39,7 @@ func (s *productService) SearchBySkuIDs(ctx context.Context, qry get_product_by_
 	}
 
 	variantBuilder := NewQueryBuilder().
-		FilterTerms("variants.sku_id", qry.SkuIDs).
+		FilterTerms("variants.id", qry.SkuIDs).
 		FilterTerm("variants.status", productStatusActive)
 
 	searchQueryBody := NewQueryBuilder().
@@ -50,6 +51,10 @@ func (s *productService) SearchBySkuIDs(ctx context.Context, qry get_product_by_
 	esResult, err := SearchDocuments[models.Product](ctx, s.esClient, s.index, searchQueryBody)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(esResult.Hits) == 0 {
+		return nil, fmt.Errorf(errShopNotFound)
 	}
 
 	foundVariantsMap := make(map[string]*get_product_by_sku_ids.Result)

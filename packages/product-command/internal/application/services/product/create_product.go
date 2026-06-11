@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	createProductActionDraft   = "DRAFT"
-	createProductActionPublish = "PUBLISH"
+	productStatusDraft   = "DRAFT"
+	productStatusPublish = "PUBLISH"
 )
 
 func (s *productService) CreateProduct(ctx context.Context, cmd create_product.Command) (*create_product.Result, error) {
@@ -71,11 +71,11 @@ func (s *productService) CreateProduct(ctx context.Context, cmd create_product.C
 		})
 	}
 
-	action, err := normalizeCreateProductAction(cmd.Action)
+	action, err := normalizeProductStatus(cmd.Status)
 	if err != nil {
 		return nil, err
 	}
-	if action == createProductActionPublish {
+	if action == productStatusPublish {
 		if err := newProduct.Publish(); err != nil {
 			return nil, err
 		}
@@ -133,7 +133,7 @@ func validateCreateProductCommand(cmd create_product.Command) error {
 	if len(cmd.Variants) == 0 {
 		return product.ErrNoSKU
 	}
-	if _, err := normalizeCreateProductAction(cmd.Action); err != nil {
+	if _, err := normalizeProductStatus(cmd.Status); err != nil {
 		return err
 	}
 
@@ -171,24 +171,24 @@ func validateCreateProductCommand(cmd create_product.Command) error {
 	return nil
 }
 
-func normalizeCreateProductAction(action string) (string, error) {
-	normalized := strings.ToUpper(strings.TrimSpace(action))
+func normalizeProductStatus(status string) (string, error) {
+	normalized := strings.ToUpper(strings.TrimSpace(status))
 	switch normalized {
-	case "", createProductActionPublish:
-		return createProductActionPublish, nil
-	case createProductActionDraft:
-		return createProductActionDraft, nil
+	case "", productStatusPublish:
+		return productStatusPublish, nil
+	case productStatusDraft:
+		return productStatusDraft, nil
 	default:
 		return "", product.ErrInvalidProductAction
 	}
 }
 
-func statusForCreateProductAction(action string) (product.ProductStatus, error) {
-	normalized, err := normalizeCreateProductAction(action)
+func checkProductStatus(status string) (product.ProductStatus, error) {
+	normalized, err := normalizeProductStatus(status)
 	if err != nil {
 		return "", err
 	}
-	if normalized == createProductActionDraft {
+	if normalized == productStatusDraft {
 		return product.StatusDraft, nil
 	}
 	return product.StatusActive, nil
@@ -236,7 +236,7 @@ func createProductResultFromExisting(cmd create_product.Command, existing *produ
 }
 
 func matchesCreateProductCommand(cmd create_product.Command, existing *product.Product) bool {
-	expectedStatus, err := statusForCreateProductAction(cmd.Action)
+	expectedStatus, err := checkProductStatus(cmd.Status)
 	if err != nil {
 		return false
 	}

@@ -21,7 +21,9 @@ type App struct {
 	infra  *module.InfraModule
 }
 
-func NewApp(logger *slog.Logger) *App { return &App{logger: logger} }
+func NewApp(logger *slog.Logger) *App {
+	return &App{logger: logger}
+}
 func (a *App) Start(ctx context.Context) error {
 	cfg, err := configx.Loader[config.ProductQueryConfig]()
 	if err != nil {
@@ -31,15 +33,26 @@ func (a *App) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("infra: %w", err)
 	}
+
 	a.infra = infra
 	application := module.NewApplicationModule(infra)
 	adapter := module.NewAdapterModule(application, a.logger)
-	a.server = &http.Server{Addr: ":" + strconv.Itoa(cfg.Server.GrpcPort), Handler: h2c.NewHandler(adapter.Mux, &http2.Server{}), ReadTimeout: 10 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second}
+
+	a.server = &http.Server{
+		Addr:         ":" + strconv.Itoa(cfg.Server.GrpcPort),
+		Handler:      h2c.NewHandler(adapter.Mux, &http2.Server{}),
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	a.logger.Info("starting product query", slog.Int("port", cfg.Server.GrpcPort))
 	if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("server: %w", err)
 	}
 	return nil
 }
+
 func (a *App) Stop(ctx context.Context) error {
 	if a.server != nil {
 		_ = a.server.Shutdown(ctx)

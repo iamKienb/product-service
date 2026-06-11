@@ -32,6 +32,7 @@ func (c *inventoryClient) CreateInventories(ctx context.Context, req port.Create
 
 	payload := connect.NewRequest(&inventory.CreateInventoriesRequest{
 		ShopId: req.ShopID,
+		UserId: req.UserID,
 		Items:  items,
 	})
 

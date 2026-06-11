@@ -11,6 +11,7 @@ type SkuItem struct {
 
 type CreateInventoryRequest struct {
 	ShopID string
+	UserID string
 	Items  []SkuItem
 }
 

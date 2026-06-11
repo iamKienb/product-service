@@ -7,8 +7,7 @@ import (
 )
 
 type ApplicationModule struct {
-	ProductService product.Service
-
+	ProductService        product.Service
 	CreateProductExecutor create_product.Executor
 }
 

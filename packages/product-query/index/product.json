@@ -76,10 +76,10 @@
             "variants": {
                 "type": "nested",
                 "properties": {
-                    "sku_id": {
+                    "id": {
                         "type": "keyword"
                     },
-                    "sku_code": {
+                    "code": {
                         "type": "keyword",
                         "normalizer": "standard_normalizer"
                     },
@@ -121,10 +121,10 @@
             "attributes": {
                 "type": "nested",
                 "properties": {
-                    "attribute_id": {
+                    "id": {
                         "type": "keyword"
                     },
-                    "attribute_name": {
+                    "name": {
                         "type": "keyword",
                         "normalizer": "standard_normalizer"
                     },

@@ -1,46 +1,32 @@
 package product
 
 import (
-	"errors"
-
+	"product-command-module/internal/application/services/product/i18n"
 	domain_product "product-command-module/internal/domain/product"
 
 	"github.com/iamKienb/go-core/app_error"
 )
 
-const (
-	errCodeProductSlugTaken      = "product_slug_taken"
-	errCodeProductInvalid        = "product_invalid"
-	errCodeProductNotFound       = "product_not_found"
-	errCodeProductVariantInvalid = "product_variant_invalid"
+var productErrorMap = app_error.ServiceErrorMap{
+	domain_product.ErrEmptyName:             {Kind: app_error.KindValidation, Msg: i18n.MsgProductNameEmpty},
+	domain_product.ErrEmptySlug:             {Kind: app_error.KindValidation, Msg: i18n.MsgProductSlugEmpty},
+	domain_product.ErrEmptySKUCode:          {Kind: app_error.KindValidation, Msg: i18n.MsgSkuCodeEmpty},
+	domain_product.ErrEmptyCurrency:         {Kind: app_error.KindValidation, Msg: i18n.MsgProductCurrencyEmpty},
+	domain_product.ErrInvalidProductID:      {Kind: app_error.KindValidation, Msg: i18n.MsgProductIdInvalid},
+	domain_product.ErrInvalidAttribute:      {Kind: app_error.KindValidation, Msg: i18n.MsgProductAttributeInvalid},
+	domain_product.ErrUnknownAttributeValue: {Kind: app_error.KindValidation, Msg: i18n.MsgProductAttributeValueUnknown},
+	domain_product.ErrInvalidSkuQuantity:    {Kind: app_error.KindValidation, Msg: i18n.MsgSkuQuantityInvalid},
+	domain_product.ErrNoSKU:                 {Kind: app_error.KindValidation, Msg: i18n.MsgProductNoSku},
 
-	errMsgProductSlugTaken      = "product slug is already taken"
-	errMsgProductInvalid        = "product data is invalid"
-	errMsgProductNotFound       = "product was not found"
-	errMsgProductVariantInvalid = "product variant data is invalid"
-)
+	domain_product.ErrProductNotFound: {Kind: app_error.KindNotFound, Msg: i18n.MsgProductNotFound},
 
-func mapError(err error) error {
-	switch {
-	case errors.Is(err, domain_product.ErrProductSlugTaken):
-		return app_error.New(app_error.KindConflict, errCodeProductSlugTaken, errMsgProductSlugTaken, err)
-	case errors.Is(err, domain_product.ErrProductNotFound):
-		return app_error.New(app_error.KindNotFound, errCodeProductNotFound, errMsgProductNotFound, err)
-	case errors.Is(err, domain_product.ErrEmptyName),
-		errors.Is(err, domain_product.ErrEmptySlug),
-		errors.Is(err, domain_product.ErrInvalidProductID),
-		errors.Is(err, domain_product.ErrInvalidProductAction),
-		errors.Is(err, domain_product.ErrInvalidAttribute):
-		return app_error.New(app_error.KindValidation, errCodeProductInvalid, errMsgProductInvalid, err)
-	case errors.Is(err, domain_product.ErrEmptySKUCode),
-		errors.Is(err, domain_product.ErrDuplicateSKUCode),
-		errors.Is(err, domain_product.ErrNoSKU),
-		errors.Is(err, domain_product.ErrUnknownAttributeValue),
-		errors.Is(err, domain_product.ErrInvalidSkuQuantity),
-		errors.Is(err, domain_product.ErrNegativePrice),
-		errors.Is(err, domain_product.ErrEmptyCurrency):
-		return app_error.New(app_error.KindValidation, errCodeProductVariantInvalid, errMsgProductVariantInvalid, err)
-	default:
-		return err
-	}
+	domain_product.ErrProductSlugTaken: {Kind: app_error.KindConflict, Msg: i18n.MsgProductSlugTaken},
+	domain_product.ErrDuplicateSKUCode: {Kind: app_error.KindConflict, Msg: i18n.MsgSkuCodeDuplicate},
+
+	domain_product.ErrInvalidProductAction:    {Kind: app_error.KindForbidden, Msg: i18n.MsgProductActionForbidden},
+	domain_product.ErrInvalidStatusTransition: {Kind: app_error.KindForbidden, Msg: i18n.MsgProductStatusTransitionInvalid},
+}
+
+func toApplicationError(err error) error {
+	return app_error.WrapError(err, productErrorMap)
 }

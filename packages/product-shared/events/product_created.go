@@ -2,10 +2,7 @@ package events
 
 import "time"
 
-const (
-	TopicProductCreated = "product-service.product.created"
-	TopicProductDeleted = "product-service.product.deleted"
-)
+const TopicProductCreated = "product-service.product.created"
 
 type ProductCreated struct {
 	ProductID   string           `json:"product_id"`
@@ -22,8 +19,8 @@ type ProductCreated struct {
 	HasVariant  bool             `json:"has_variant"`
 	CreatedBy   string           `json:"created_by"`
 	CreatedAt   time.Time        `json:"created_at"`
-	Attributes  []AttributeEvent `json:"attributes"` // Gom cụm attribute
-	Variants    []VariantEvent   `json:"variants"`   // Gom cụm variant
+	Attributes  []AttributeEvent `json:"attributes"`
+	Variants    []VariantEvent   `json:"variants"`
 }
 
 type AttributeEvent struct {
@@ -46,9 +43,4 @@ type VariantEvent struct {
 	Status            string   `json:"status"`
 	IsDefault         bool     `json:"is_default"`
 	AttributeValueIDs []string `json:"attribute_value_ids"`
-}
-
-type ProductDeleted struct {
-	ProductID string `json:"product_id"`
-	ShopID    string `json:"shop_id"`
 }

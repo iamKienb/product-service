@@ -31,10 +31,15 @@ func (s *productServer) CreateProduct(ctx context.Context, req *connect.Request[
 
 	result, err := s.createProductExecutor.Execute(ctx, cmd)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, toApplicationError(err)
 	}
 
 	return connect.NewResponse(ToCreateProductResponse(result)), nil
+}
+
+func (s *productServer) GetPriceSkusByIDs(ctx context.Context, req *connect.Request[product.GetPriceSkusByIDsRequest]) (*connect.Response[product.GetPriceSkusByIDsResponse], error) {
+
+	return nil, nil
 }
 
 var _ productconnect.ProductCommandServiceHandler = (*productServer)(nil)

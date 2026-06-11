@@ -50,7 +50,7 @@ func CreateProductWorkflow(ctx workflow.Context, cmd create_product.Command, cfg
 	}
 
 	compensations = append(compensations, func(rCtx workflow.Context) {
-		_ = workflow.ExecuteActivity(rCtx, productAct.RollbackProduct, result.ProductID).Get(rCtx, nil)
+		_ = workflow.ExecuteActivity(rCtx, productAct.RollbackProduct, result.ProductID.String()).Get(rCtx, nil)
 	})
 
 	items := make([]port.SkuItem, 0, len(result.SkuItems))
@@ -63,6 +63,7 @@ func CreateProductWorkflow(ctx workflow.Context, cmd create_product.Command, cfg
 
 	params := port.CreateInventoryRequest{
 		ShopID: cmd.ShopID.String(),
+		UserID: cmd.UserID.String(),
 		Items:  items,
 	}
 

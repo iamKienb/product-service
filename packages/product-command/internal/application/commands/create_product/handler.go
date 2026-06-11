@@ -7,6 +7,8 @@ import (
 	"github.com/iamKienb/go-core/app_error"
 )
 
+const action = "product:create"
+
 type workflowRunner interface {
 	CreateProduct(ctx context.Context, cmd Command) (*Result, error)
 }
@@ -27,7 +29,7 @@ func (h *handler) Execute(ctx context.Context, cmd Command) (*Result, error) {
 	result, err := h.client.CheckPermission(ctx, port.CheckPermissionRequest{
 		ShopID: cmd.ShopID.String(),
 		UserID: cmd.UserID.String(),
-		Action: cmd.Action,
+		Action: action,
 	})
 	if err != nil {
 		return nil, err

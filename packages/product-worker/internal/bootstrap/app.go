@@ -41,7 +41,10 @@ func (a *App) Start(ctx context.Context) error {
 		}
 		consumers = append(consumers, consumer)
 	}
+
 	a.consumers = consumers
+	a.logger.Info("starting product worker", slog.Any("topics", cfg.Consumer.Topics))
+
 	errCh := make(chan error, len(consumers))
 	var wg sync.WaitGroup
 	for _, consumer := range consumers {

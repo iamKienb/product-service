@@ -73,10 +73,14 @@ func DecodeInnerHits[K any](rawInnerHits json.RawMessage, path string) ([]K, err
 
 	targetPathData, exists := innerHitsMap[path]
 	if !exists {
-		return nil, nil
+		return nil, fmt.Errorf("inner_hit path %s not found", path)
 	}
 
 	esHits := targetPathData.Hits.Hits
+	if len(esHits) == 0 {
+		return nil, fmt.Errorf("total hits in inner_hit path '%s' not found", path)
+	}
+
 	items := make([]K, 0, len(esHits))
 	for _, hit := range esHits {
 		var item K

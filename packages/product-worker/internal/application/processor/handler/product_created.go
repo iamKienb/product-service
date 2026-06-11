@@ -22,6 +22,42 @@ func (h *ProductCreatedHandler) Handle(ctx context.Context, raw json.RawMessage)
 		return err
 	}
 
+	esAttributes := make([]map[string]any, 0, len(payload.Attributes))
+	for _, attr := range payload.Attributes {
+		esValues := make([]map[string]any, 0, len(attr.Values))
+		for _, val := range attr.Values {
+			esValues = append(esValues, map[string]any{
+				"id":   val.AttributeValueID,
+				"name": val.ValueName,
+			})
+		}
+
+		esAttributes = append(esAttributes, map[string]any{
+			"id":     attr.AttributeID,
+			"name":   attr.AttributeName,
+			"values": esValues,
+		})
+	}
+
+	esVariants := make([]map[string]any, 0, len(payload.Variants))
+	for _, variant := range payload.Variants {
+		esVariants = append(esVariants, map[string]any{
+			"id":                  variant.SkuID,
+			"code":                variant.SkuCode,
+			"price":               variant.Price,
+			"currency":            variant.Currency,
+			"image_url":           variant.ImageURL,
+			"status":              variant.Status,
+			"is_default":          variant.IsDefault,
+			"attribute_value_ids": variant.AttributeValueIDs,
+
+			"created_by": payload.CreatedBy,
+			"updated_by": payload.CreatedBy,
+			"created_at": payload.CreatedAt,
+			"updated_at": payload.CreatedAt,
+		})
+	}
+
 	doc := map[string]any{
 		"id":          payload.ProductID,
 		"shop_id":     payload.ShopID,
@@ -38,8 +74,8 @@ func (h *ProductCreatedHandler) Handle(ctx context.Context, raw json.RawMessage)
 		"created_by":  payload.CreatedBy,
 		"created_at":  payload.CreatedAt,
 
-		"attributes": payload.Attributes,
-		"variants":   payload.Variants,
+		"attributes": esAttributes,
+		"variants":   esVariants,
 	}
 
 	return h.repo.SyncData(ctx, h.alias, payload.ProductID, doc)
